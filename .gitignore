@@ -1,0 +1,9 @@
+bin/
+data/
+db/
+dist/
+logs/
+test-results/
+lib/
+tmp/
+modules/
