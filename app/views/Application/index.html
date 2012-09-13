@@ -1,4 +1,32 @@
 #{extends 'main.html' /}
 #{set title:'Home' /}
 
-#{welcome /}
+<h1>PermCompare</h1>
+
+<p>Drag 'n Drop permission comparison (OAuth2)</p>
+
+#{if accounts}
+
+<h2> Accounts </h2>
+	<table>
+	#{list items:accounts, as:'acct'}
+		<tr>
+			<td>
+				<h4>${acct.Name}</h4>
+			</td>			 
+			<td>
+				<h4>${acct.AccountNumber}</h4>
+			</td>
+			<td>
+				<h4>${acct.NumberOfEmployees}</h4>
+			</td>			
+		</tr>	
+	#{/list}
+	</table>
+<br/>
+<a href="@{sforceLogout()}">Logout</a><br/>
+<a href="@{renderUserPage()}">View Users</a>
+#{/if}
+#{else}
+<a href="@{sforceLogin()}">Login</a>
+#{/else}

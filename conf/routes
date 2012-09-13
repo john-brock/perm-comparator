@@ -4,6 +4,14 @@
 
 # Home page
 GET     /                                       Application.index
+GET     /test									Application.test
+
+# Permission set comparisons
+GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}	Application.permsetDiffs
+
+
+# Main page functions
+GET 	/{item}/get								Application.get{item}
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
@@ -11,5 +19,9 @@ GET     /favicon.ico                            404
 # Map static resources from the /app/public folder to the /public path
 GET     /public/                                staticDir:public
 
+# getPermset - read after query
+GET		/permset								Application.readPermset
+
 # Catch all
 *       /{controller}/{action}                  {controller}.{action}
+

@@ -7,11 +7,19 @@ import models.*;
 public class ApplicationTest extends FunctionalTest {
 
     @Test
-    public void testThatIndexPageWorks() {
+    public void testIndexPage() {
         Response response = GET("/");
         assertIsOk(response);
         assertContentType("text/html", response);
         assertCharset(play.Play.defaultWebEncoding, response);
+    }
+    
+    @Test
+    public void testSuccessPage() {
+    	Response response = GET("/success");
+    	assertIsOk(response);
+    	assertContentType("text/html", response);
+    	assertCharset(play.Play.defaultWebEncoding, response);
     }
     
 }
