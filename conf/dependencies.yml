@@ -2,3 +2,4 @@
 
 require:
     - play 1.2.4
+    - com.google.guava -> guava r13
