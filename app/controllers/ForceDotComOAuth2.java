@@ -144,8 +144,8 @@ public class ForceDotComOAuth2 extends Controller {
 			params.put("grant_type", "authorization_code");
 			params.put("client_id", clientid);
 			params.put("client_secret", secret);
-			params.put("redirect_uri", "https://perm-comparator.herokuapp.com/forcedotcomoauth2/callback");
-					//play.mvc.Router.getFullUrl("ForceDotComOAuth2.callback"));
+			params.put("redirect_uri",
+					play.mvc.Router.getFullUrl("ForceDotComOAuth2.callback"));
 			params.put("code", accessCode);
 			HttpResponse response = WS.url(accessTokenURL).params(params)
 					.post();
