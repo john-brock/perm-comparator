@@ -1,32 +1,108 @@
-#{extends 'main.html' /}
-#{set title:'Home' /}
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/public/stylesheets/ext-all.css" />
+<script type="text/javascript" src="/public/javascripts/ext-all.js"></script>
+<script type="text/javascript" src="/public/javascripts/mainLoad.js"></script>
+<style type="text/css">
 
-<h1>PermCompare</h1>
+.app-header .x-panel-body {
+    background-color: #DFE8F6;
+    border-color: #15428B;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-left-width: 0px;
+    border-bottom-width: 4px;
+}
 
-<p>Drag 'n Drop permission comparison (OAuth2)</p>
+.app-header-column .x-panel-body {
+    background-color: #DFE8F6;
+	border-width: 0px;
+}
 
-#{if accounts}
+.app-header-column h1 {
+    font-family: verdana,arial,sans-serif;
+    font-size: 20px;
+    color: #15428B;
+}
 
-<h2> Accounts </h2>
-	<table>
-	#{list items:accounts, as:'acct'}
-		<tr>
-			<td>
-				<h4>${acct.Name}</h4>
-			</td>			 
-			<td>
-				<h4>${acct.AccountNumber}</h4>
-			</td>
-			<td>
-				<h4>${acct.NumberOfEmployees}</h4>
-			</td>			
-		</tr>	
-	#{/list}
-	</table>
-<br/>
-<a href="@{sforceLogout()}">Logout</a><br/>
-<a href="@{renderUserPage()}">View Users</a>
-#{/if}
-#{else}
-<a href="@{sforceLogin()}">Login</a>
-#{/else}
+.menu-accordion .x-panel-header-text {
+    font-weight:bold;
+    font-size: 12px;
+    color: #15428B;
+}
+
+.x-tool-collapse-top {
+	background-image: url('../public/images/tool-sprites.gif') !important;
+}
+
+.x-tool-expand-bottom {
+	background-image: url('../public/images/tool-sprites.gif') !important;
+}
+
+.sub-menu .x-panel-header {
+	background-color:#EFF5FC !important;
+}
+.sub-menu .x-panel-header-text {
+	font-size: 10px;
+	color:#15428B;
+	padding-left: 8px;
+}
+
+.sub-menu .x-panel-body {
+	border-top: 0px;
+	overflow-x: hidden !important;
+}
+
+.destination-target {
+    border: 1px solid red;
+    margin: 5px;
+    padding: 5px;
+    font-size: small;
+    cursor: default;
+}
+
+.destination-target.destination-target-hover {
+    background-color: #C0C0C0;
+}
+
+.destination-target.destination-target-dropped {
+    border: 1px solid green;
+}
+
+.item-source {
+    cursor: pointer;
+}
+
+.item-view table {
+    border-collapse: separate;
+    border-spacing: 2px;
+}
+
+.item-view td {
+    font-family: verdana,arial,sans-serif;
+    font-size: 12px;
+}
+
+td.item-label {
+    background-color: #ddd;
+    border: 1px solid #bbb;
+    font-weight: bold;
+    text-align: right;
+    width: 55px;
+    padding: 0px 3px 0px 0px;
+}
+
+.item-over {
+    background-color:#EFEFEF;
+    cursor: pointer;
+}
+.item-selected {
+    background-color: #DFE8F6;
+    cursor: pointer;
+}
+</style>
+<title>PermComparator</title>
+</head>
+<body>
+</body>
+</html>

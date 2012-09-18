@@ -7,6 +7,12 @@ import play.db.jpa.JPABase;
 import play.db.jpa.Model;
 import play.libs.Crypto;
 
+/*
+ * Play-ing in Java - By SANDEEP BHANOT
+ * http://blogs.developerforce.com/developer-relations/2011/08/play-ing-in-java.html
+ * https://github.com/sbhanot-sfdc/Play-Force
+ */
+
 @Entity
 public class OAuthSession extends Model {
 

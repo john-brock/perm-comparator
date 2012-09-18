@@ -15,6 +15,11 @@ import com.google.gson.JsonObject;
 import play.libs.WS.HttpResponse;
 import java.io.Serializable;
 
+/*
+ * Play-ing in Java - By SANDEEP BHANOT
+ * http://blogs.developerforce.com/developer-relations/2011/08/play-ing-in-java.html
+ * https://github.com/sbhanot-sfdc/Play-Force
+ */
 public class ForceDotComOAuth2 extends Controller {
 
 	private static String authorizationURL;

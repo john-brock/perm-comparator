@@ -1,8 +1,81 @@
-#{extends 'main.html' /}
-#{set title:'PermComparator - Login' /}
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/public/stylesheets/ext-all.css" />
+<script type="text/javascript" src="/public/javascripts/ext-all.js"></script>
+<script type="text/javascript" src="/public/javascripts/loginPage.js"></script>
+<style type="text/css">
 
-<h1>PermComparator Login</h1>
+.app-header .x-panel-body {
+    background-color: #DFE8F6;
+    border-color: #15428B;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-left-width: 0px;
+    border-bottom-width: 4px;
+}
 
-<p>Drag 'n Drop permission comparison (OAuth2)</p>
+.app-header h1 {
+    font-family: verdana,arial,sans-serif;
+    font-size: 20px;
+    color: #15428B;
+}
 
-<a href="@{sforceLogin()}">Login</a>
+.app-body .x-panel-body {
+	background-color: #EFF4FD;
+	border-width: 0px;
+}
+
+.app-body h2 {
+    font-family: verdana,arial,sans-serif;
+    font-size: 14px;
+    color: #577CB8;
+    padding-top: 5px;
+}
+.app-body h3 {
+    font-family: verdana,arial,sans-serif;
+    font-size: 12px;
+    font-weight: lighter;
+    color: #577CB8;
+    padding-bottom: 5px;
+}
+
+.app-footer .x-panel-body {
+    background-color: #FFF;
+}
+.app-footer h2 {
+    font-family: verdana,arial,sans-serif;
+	font-style:italic;
+	font-size: 10px;
+	font-weight:lighter;
+	margin-left: auto;
+	margin-right: auto;
+	width: 54%;
+}
+
+.login-button .x-column {
+	margin-left: auto;
+	margin-right: auto;
+	width: 70% !important;
+	float: center;
+}
+
+.login-button .x-btn {
+	width: 100%;
+}
+
+.login-button .x-btn-default-small .x-btn-inner {
+    font-family: verdana,arial,sans-serif;
+    color: #15428B;
+    font-size: 20px;
+}
+
+.no-border .x-panel-body {
+	border-width: 2px;
+}
+
+</style>
+<title>PermComparator - Login</title>
+</head>
+<body>
+</body>
+</html>

@@ -2,8 +2,7 @@ Ext.require(['*']);
 
 Ext.onReady(function() {
 	
-	itemCompareCount = 0;
-	
+	// Users, Permission Sets - reader for menu items
 	var menuItemReader = new Ext.data.JsonReader({
 		totalProperty: 'totalSize',
 		successProperty: 'done',
@@ -22,6 +21,7 @@ Ext.onReady(function() {
             	]
     });
     
+	// Profiles different since get profile name, permsetId
 	var profileItemReader = new Ext.data.JsonReader({
 		totalProperty: 'totalSize',
 		successProperty: 'done',
@@ -49,79 +49,9 @@ Ext.onReady(function() {
     var profilePermsetMenuStore = makeStore("ProfilePermsets", profileItemReader, profileItem);
     profilePermsetMenuStore.load();
     
-    var userView = Ext.create('Ext.view.View', {
-        cls: 'patient-view',
-        tpl: '<tpl for=".">' +
-                '<div class="patient-source"><table><tbody>' +
-                    '<tr><td class="patient-label">Name</td><td class="patient-name">{Name}</td></tr>' +
-                    '<tr><td class="patient-label">UserId</td><td class="patient-name">{Id}</td></tr>' +
-                '</tbody></table></div>' +
-             '</tpl>',
-        itemSelector: 'div.patient-source',
-        overItemCls: 'patient-over',
-        selectedItemClass: 'patient-selected',
-        singleSelect: true,
-        store: userMenuStore,
-        listeners: {
-            render: initializePatientDragZone
-        }
-    });
-    
-    var permsetView = Ext.create('Ext.view.View', {
-        cls: 'patient-view',
-        tpl: '<tpl for=".">' +
-                '<div class="patient-source"><table><tbody>' +
-                    '<tr><td class="patient-label">Name</td><td class="patient-name">{Name}</td></tr>' +
-                    '<tr><td class="patient-label">Permset Id</td><td class="patient-name">{Id}</td></tr>' +
-                '</tbody></table></div>' +
-             '</tpl>',
-        itemSelector: 'div.patient-source',
-        overItemCls: 'patient-over',
-        selectedItemClass: 'patient-selected',
-        singleSelect: true,
-        store: permsetMenuStore,
-        listeners: {
-            render: initializePatientDragZone
-        }
-    });
-    
-    var profilePermsetView = Ext.create('Ext.view.View', {
-        cls: 'patient-view',
-        tpl: '<tpl for=".">' +
-                '<div class="patient-source"><table><tbody>' +
-                    '<tr><td class="patient-label">Profile Name</td><td class="patient-name">{Name}</td></tr>' +
-                    '<tr><td class="patient-label">Id</td><td class="patient-name">{Id}</td></tr>' +
-                '</tbody></table></div>' +
-             '</tpl>',
-        itemSelector: 'div.patient-source',
-        overItemCls: 'patient-over',
-        selectedItemClass: 'patient-selected',
-        singleSelect: true,
-        store: profilePermsetMenuStore,
-        listeners: {
-            render: initializePatientDragZone
-        }
-    });
-    
-    var helpWindow = Ext.create('Ext.Window', {
-        title: 'Source code',
-        width: 920,
-        height: 500,
-        closeAction: 'hide',
-        renderTpl: [
-            '<textarea readonly class="{baseCls}-body<tpl if="bodyCls"> {bodyCls}</tpl><tpl if="frame"> {baseCls}-body-framed</tpl><tpl if="ui"> {baseCls}-body-{ui}</tpl>"<tpl if="bodyStyle"> style="{bodyStyle}"</tpl>></div>'
-        ],
-        listeners: {
-            render: function(w) {
-                Ext.Ajax.request({
-                    url: 'dragdropzones.js',
-                    success: function(r) {
-                        w.body.dom.value = r.responseText;
-                    }
-                });
-            }
-        }
-    });
+    var userView = makeMenuView(userMenuStore);
+    var permsetView = makeMenuView(permsetMenuStore);
+    var profilePermsetView = makeMenuView(profilePermsetMenuStore);
 
     var userMenu = Ext.create('Ext.Panel', {
     	title: 'Users',
@@ -142,15 +72,28 @@ Ext.onReady(function() {
     });
     
     var selectionMenu = Ext.create('Ext.Panel', {
+    	cls: 'menu-accordion',
     	region: 'west',
-        width: 300,
+        width: 225,
         margins: '0 0 5 5',
         layout: 'accordion',
         layoutConfig: {animate: true},
         items: [userMenu, permsetMenu, profileMenu]
     });
 
-    // -- Make drag / drop columns and header --
+    // id fields that are set when item dropped and API call made
+    id1 = 'blank';
+    id2 = 'blank';
+    id3 = 'blank';
+    id4 = 'blank';
+    
+    // id elements of each drop column's rowbody for clearing when reseting
+    idItem1 = 'blank';
+    idItem2 = 'blank';
+    idItem3 = 'blank';
+    idItem4 = 'blank';
+    
+    // -- Build drag and drop header --
     var column1Info = [{
     	cName: 'Item 1'
     }];
@@ -170,12 +113,7 @@ Ext.onReady(function() {
     var dropColumn4 = makeDropColumn(column4Info);
     var dragDropHeader = makeColumnPanel('', dropColumn1, dropColumn2, dropColumn3, dropColumn4, '0');
 
-    // -- Views to fill compare panesl --
-    id1 = 'blank';
-    id2 = 'blank';
-    id3 = 'blank';
-    id4 = 'blank';
-    
+    // -- Views to fill compare panels --
     var uPermStore1 = makePermStore('permset1_Unique');
     var uPermStore2 = makePermStore('permset2_Unique');
     var uPermStore3 = makePermStore('permset3_Unique');
@@ -186,12 +124,17 @@ Ext.onReady(function() {
     var uPermCommonStore3 = makePermStore('permset3_Common');
     var uPermCommonStore4 = makePermStore('permset4_Common');
     
-    // main store that will load data to specific user perm stores from 1 json
+    var uPermDifferencesStore1 = makePermStore('permset1_Differences');
+    var uPermDifferencesStore2 = makePermStore('permset2_Differences');
+    var uPermDifferencesStore3 = makePermStore('permset3_Differences');
+    var uPermDifferencesStore4 = makePermStore('permset4_Differences');
+    
+    // main store that will load data to specific user perm stores from 1 main json
     userPermStore = new Ext.data.Store({
     	storeId: 'userPermStoreId',
     	proxy: {
     		type: 'ajax',
-    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4,
+    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/get',
 	        reader: {		
 	    		type: 'json',
 	        	fields : [ {name: 'name', type: 'string'} ]
@@ -209,6 +152,11 @@ Ext.onReady(function() {
     			uPermCommonStore2.loadRawData(store.proxy.reader.jsonData);
     			uPermCommonStore3.loadRawData(store.proxy.reader.jsonData);
     			uPermCommonStore4.loadRawData(store.proxy.reader.jsonData);
+    			
+    			uPermDifferencesStore1.loadRawData(store.proxy.reader.jsonData);
+    			uPermDifferencesStore2.loadRawData(store.proxy.reader.jsonData);
+    			uPermDifferencesStore3.loadRawData(store.proxy.reader.jsonData);
+    			uPermDifferencesStore4.loadRawData(store.proxy.reader.jsonData);
     		}
     	}
     });
@@ -226,20 +174,26 @@ Ext.onReady(function() {
     var uPermCommonView3 = makePermView(uPermCommonStore3);
     var uPermCommonView4 = makePermView(uPermCommonStore4);
     
-    var blankView = Ext.create('Ext.view.View', {
-    	html: 'Perms shown here'
-    })
-    // -- Make compare panels --
-    var userPermDiffs = makeColumnPanel('-- User Permissions', uPermView1, uPermView2, uPermView3, uPermView4);
-    var userPermSims = makeColumnPanel('-- User Permissions', uPermCommonView1, uPermCommonView2, uPermCommonView3, uPermCommonView4);
-    var objPermDiffs = makeColumnPanel('-- Object Permissions', blankView, blankView, blankView, blankView);
-    var objPermSims = makeColumnPanel('-- Object Permissions', blankView, blankView, blankView, blankView);
+    var uPermDifferencesView1 = makePermView(uPermDifferencesStore1);
+    var uPermDifferencesView2 = makePermView(uPermDifferencesStore2);
+    var uPermDifferencesView3 = makePermView(uPermDifferencesStore3);
+    var uPermDifferencesView4 = makePermView(uPermDifferencesStore4);
     
-    var permsetDifferences = makeComparisonPanel('Differences', [userPermDiffs]);
-    var permsetSimilarities = makeComparisonPanel('Similarities', [userPermSims]);
-//    var permsetDifferences = makeComparisonPanel('Differences', [userPermDiffs, objPermDiffs]);
-//    var permsetSimilarities = makeComparisonPanel('Similarities', [userPermSims, objPermSims]);
-    var comparePanel = makeComparisonPanel('', [permsetDifferences, permsetSimilarities]);
+    // -- Make compare panels --
+    // column panels to hold perms for each of the compare items
+    var userPermUniques = makeColumnPanel('User Permissions', uPermView1, uPermView2, uPermView3, uPermView4);
+    var userPermSims = makeColumnPanel('User Permissions', uPermCommonView1, uPermCommonView2, uPermCommonView3, uPermCommonView4);
+    var userPermDiffs = makeColumnPanel('User Permissions', uPermDifferencesView1, uPermDifferencesView2, uPermDifferencesView3, uPermDifferencesView4);
+    // easy to add more of these column panels for object perms, FLS, ect.
+    
+    // panels specific to unique, common, differing
+    var permsetUniques = makeComparisonPanel('Unique Perms', [userPermUniques]);
+    var permsetSimilarities = makeComparisonPanel('Common Perms', [userPermSims]);
+    var permsetDifferences = makeComparisonPanel('Differing Perms', [userPermDiffs]);
+    
+    // main compare panel for body of page
+    var comparePanel = makeComparisonPanel('', [permsetSimilarities, permsetUniques, permsetDifferences]);
+
 
     // -- Create body panel then whole page with header, navigation, and body panels --
     var mainPanel = Ext.create('Ext.Panel', {
@@ -251,20 +205,64 @@ Ext.onReady(function() {
     	},
     	items: [ dragDropHeader, comparePanel ]
     });
+
+    // clear assignments button
+    var clearAssignments = Ext.create('Ext.button.Button', {
+  	   text: 'Clear Assignments',
+ 	   tooltip: 'Logout',
+ 	   width: 150,
+ 	   height: 24,
+ 	   handler: clearAssignmentsFunction
+	});
     
+    var logoutButton = Ext.create('Ext.button.Button', {
+ 	   text: 'Logout',
+	   tooltip: 'Logout',
+	   width: 100,
+	   height: 24,
+	   handler: function() {
+		   window.location.href='/logout';
+	   }
+    });
+    
+    var header = Ext.create('Ext.Panel', {
+    	cls: 'app-header',
+    	layout: 'column',
+        region: 'north',
+        height: 30,
+        margins: '5 5 0 5',
+        
+        items: [{
+            html: '<h1>PermComparator</h1>',
+            columnWidth: 0.6,
+        	cls: 'app-header-column'
+        },
+        {
+        	items: [clearAssignments],
+        	columnWidth: 0.2,
+        	style: 'text-align: right;',
+        	cls: 'app-header-column'
+        },
+        {
+        	items: [logoutButton],
+        	columnWidth: 0.2,
+        	style: 'text-align: right;',
+        	cls: 'app-header-column'
+        }
+        ]
+    });
+    
+    // -- Main Viewport Display for whole Page --
     Ext.create('Ext.Viewport', {
         layout: 'border',
-        items: [{
-            cls: 'app-header',
-            region: 'north',
-            height: 30,
-            html: '<h1>PermComparator</h1>',
-            margins: '5 5 5 5'
-        }, selectionMenu, 
-        mainPanel
+        items: [
+                header,
+                selectionMenu, 
+                mainPanel
         ] 
     });
 });
+
 
 // ** Utility functions **
 //
@@ -297,6 +295,30 @@ function makePermStore(nameOfJsonRoot) {
     });
 }
 
+// view used for displaying Name and Id for Users, Permsets, and Profiles in left-hand Menu
+// - makes the items dragable with initializeDragZone call
+// EXTJS4 Drag Drop example was VERY helpful
+// -- http://dev.sencha.com/deploy/ext-4.0.0/examples/dd/dragdropzones.html
+function makeMenuView(itemStore) {
+	return Ext.create('Ext.view.View', {
+		cls: 'item-view',
+		tpl: '<tpl for=".">' +
+            	'<div class="item-source"><table><tbody>' +
+                	'<tr><td class="item-label">Name</td><td class="item-name">{Name}</td></tr>' +
+                	'<tr><td class="item-label">Id</td><td class="item-name">{Id}</td></tr>' +
+                '</tbody></table></div>' +
+            '</tpl>',
+         itemSelector: 'div.item-source',
+         overItemCls: 'item-over',
+         selectedItemClass: 'item-selected',
+         singleSelect: true,
+         store: itemStore,
+         listeners: {
+        	 render: initializeItemDragZone
+         }
+	});
+}
+	
 // make view for displaying perms - param: store to use
 function makePermView(permStore) {
 	return new Ext.create('Ext.grid.Panel', {
@@ -317,6 +339,7 @@ function makePermView(permStore) {
 function makeColumnPanel(permSectionName, col1Items, col2Items, col3Items, col4Items) {
     return Ext.create('Ext.Panel', {
     	title: permSectionName,
+    	cls: 'sub-menu',
     	layout: 'hbox',
     	margins: '0 0 0 0',
     	autoScroll: true,
@@ -344,6 +367,7 @@ function makeColumnPanel(permSectionName, col1Items, col2Items, col3Items, col4I
 function makeComparisonPanel(panelName, panelItems) {
 	return Ext.create('Ext.Panel', {
 		title: panelName,
+    	cls: 'menu-accordion',
 		layout: 'accordion',
 		layoutConfig: {animate: true},
 		flex: 1,
@@ -356,6 +380,7 @@ function makeDropColumn(columnInfo) {
     return Ext.create('Ext.grid.Panel', {
         region: 'center',
         margins: '0 5 5 5',
+        border: false,
         sortableColumns: false,
         hideHeaders: true,
         store: {
@@ -369,19 +394,57 @@ function makeDropColumn(columnInfo) {
         }],
         features: [{
             ftype:'rowbody',
-            rowBodyDivCls: 'hospital-target',
+            rowBodyDivCls: 'destination-target',
             getAdditionalData: function() {
                 return Ext.apply(Ext.grid.feature.RowBody.prototype.getAdditionalData.apply(this, arguments), {
-                    rowBody: 'Drop Here'
+                    rowBody: 'Drop Here',
                 });
             }
         }],
         viewConfig: {
-        	listeners: {render: initializeHospitalDropZone}
+        	listeners: {render: initializeDestinationDropZone}
         }
     });
 }
 
+// Functions used to clear drop zones 
+function clearAssignmentsFunction() {
+    var blank = 'blank';
+
+	if (idItem1.indexOf(blank) == -1) {
+		clearRowBody(idItem1);
+	}
+	if (idItem2.indexOf(blank) == -1) {
+		clearRowBody(idItem2);
+	}
+	if (idItem3.indexOf(blank) == -1) {
+		clearRowBody(idItem3);
+	}
+	if (idItem4.indexOf(blank) == -1) {
+		clearRowBody(idItem4);
+	}
+    // reset ids for new API calls
+	id1 = 'blank';
+	id2 = 'blank';
+	id3 = 'blank';
+	id4 = 'blank';
+	userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/get';
+	userPermStoreId.load();
+}
+
+function clearRowBody(target) {
+	var text = 'Drop Here';
+	var rowBody = Ext.fly(target).findParent('.x-grid-rowbody-tr', null, false),
+		targetEl = Ext.get(target);
+	
+    Ext.fly(target).removeCls('destination-target-dropped');
+    targetEl.update(text);
+}
+
+// -----------------------------------------------------------------------
+// ExtJS 4 Drag 'n Drop Example
+//-- http://dev.sencha.com/deploy/ext-4.0.0/examples/dd/dragdropzones.html
+// -----------------------------------------------------------------------
 /*
  * Here is where we "activate" the DataView.
  * We have decided that each node with the class "patient-source" encapsulates a single draggable
@@ -397,7 +460,7 @@ function makeDropColumn(columnInfo) {
  * We can insert any other data into the data object, and this will be used by a cooperating DropZone
  * to perform the drop operation.
  */
-function initializePatientDragZone(v) {
+function initializeItemDragZone(v) {
     v.dragZone = Ext.create('Ext.dd.DragZone', v.getEl(), {
 
 //      On receipt of a mousedown event, see if it is within a draggable element.
@@ -413,7 +476,7 @@ function initializePatientDragZone(v) {
                     sourceEl: sourceEl,
                     repairXY: Ext.fly(sourceEl).getXY(),
                     ddel: d,
-                    patientData: v.getRecord(sourceEl).data
+                    itemData: v.getRecord(sourceEl).data
                 };
             }
         },
@@ -443,7 +506,7 @@ function initializePatientDragZone(v) {
  *
  * We provide implementations of each of these to provide behaviour for these events.
  */
-function initializeHospitalDropZone(v) {
+function initializeDestinationDropZone(v) {
     var gridView = v,
         grid = gridView.up('gridpanel');
 
@@ -452,17 +515,17 @@ function initializeHospitalDropZone(v) {
 //      If the mouse is over a target node, return that node. This is
 //      provided as the "target" parameter in all "onNodeXXXX" node event handling functions
         getTargetFromEvent: function(e) {
-            return e.getTarget('.hospital-target');
+            return e.getTarget('.destination-target');
         },
 
 //      On entry into a target node, highlight that node.
         onNodeEnter : function(target, dd, e, data){
-            Ext.fly(target).addCls('hospital-target-hover');
+            Ext.fly(target).addCls('destination-target-hover');
         },
 
 //      On exit from a target node, unhighlight that node.
         onNodeOut : function(target, dd, e, data){
-            Ext.fly(target).removeCls('hospital-target-hover');
+            Ext.fly(target).removeCls('destination-target-hover');
         },
 
 //      While over a target node, return the default drop allowed class which
@@ -477,39 +540,39 @@ function initializeHospitalDropZone(v) {
 //      We can use the data set up by the DragZone's getDragData method to read
 //      any data we decided to attach.
         onNodeDrop : function(target, dd, e, data){
-            var rowBody = Ext.fly(target).findParent('.x-grid-rowbody-tr', null, false),
+        	var rowBody = Ext.fly(target).findParent('.x-grid-rowbody-tr', null, false),
                 mainRow = rowBody.previousSibling,
                 h = gridView.getRecord(mainRow),
                 targetEl = Ext.get(target);
+            targetEl.update(data.itemData.Name);
+            Ext.fly(target).addCls('destination-target-dropped');
 
-            targetEl.update(data.patientData.Name);
-            Ext.fly(target).addCls('hospital-target-dropped');
-            itemCompareCount++;
-            
-            //if (mainId == 'blank')
-            //Ext.Msg.alert(h.data.cName);
+            // Personal customization mixed in, but main part came from example code on ExtJS website
             var item = h.data.cName;
             switch(item)
             {
             case 'Item 1':
-            	id1 = data.patientData.Id;
+            	id1 = data.itemData.Id;
+            	idItem1 = target.id;
             	break;
             case 'Item 2':
-        		id2 = data.patientData.Id;
+        		id2 = data.itemData.Id;
+        		idItem2 = target.id;
             	break;
             case 'Item 3':
-        		id3 = data.patientData.Id;
+        		id3 = data.itemData.Id;
+        		idItem3 = target.id;
             	break;
             case 'Item 4':
-        		id4 = data.patientData.Id;
+        		id4 = data.itemData.Id;
+        		idItem4 = target.id;
             	break;
             }
             
-            userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4;
+            userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/get';
             userPermStoreId.load();
 
             return true;
         }
     });
 }
-

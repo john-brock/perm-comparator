@@ -34,11 +34,13 @@ public class PermissionSet {
 		PermissionsTransferAnyLead, PermissionsUseTeamReassignWizards, PermissionsViewAllData, PermissionsViewDataCategories, 
 		PermissionsViewMyTeamsDashboards, PermissionsViewSetup
 	};
-	// permissionApiUserOnly, InboundTools, OutboundTools, ScheduleJobs did not retrieve from Query - invalid field error
+	// NOTE: currenly having issue with following perms being retrieved: (invalid field message)
+	// 			permissionApiUserOnly, InboundTools, OutboundTools, ScheduleJobs
 
 	private EnumSet<validUserPerms> userPerms;
 	private EnumSet<validUserPerms> uniqueUserPerms;
 	private EnumSet<validUserPerms> commonUserPerms;
+	private EnumSet<validUserPerms> differenceUserPerms;
 
 	public PermissionSet() {}
 
@@ -46,13 +48,8 @@ public class PermissionSet {
 		id = permsetId;
 		userPerms = EnumSet.noneOf(validUserPerms.class);
 		uniqueUserPerms = userPerms;
-	}
-	
-	public PermissionSet(String permsetId, String permsetName) {
-		id = permsetId;
-		name = permsetName;
-		userPerms = EnumSet.noneOf(validUserPerms.class);
-		uniqueUserPerms = userPerms;
+		commonUserPerms = userPerms;
+		differenceUserPerms = userPerms;
 	}
 	
 	public String getId() {
@@ -73,6 +70,9 @@ public class PermissionSet {
 	public EnumSet<validUserPerms> getCommonUserPerms() {
 		return commonUserPerms;
 	}
+	public EnumSet<validUserPerms> getDifferenceUserPerms() {
+		return differenceUserPerms;
+	}
 	
 
 	public void setId(String id) {
@@ -89,5 +89,8 @@ public class PermissionSet {
 	}
 	public void setCommonUserPerms(EnumSet<validUserPerms> userPerms) {
 		this.commonUserPerms = userPerms;
+	}
+	public void setDifferenceUserPerms(EnumSet<validUserPerms> userPerms) {
+		this.differenceUserPerms = userPerms;
 	}
 }

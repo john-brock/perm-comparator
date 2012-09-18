@@ -8,3 +8,5 @@ lib/
 tmp/
 modules/
 eclipse/
+conf/host.cert
+conf/host.key
