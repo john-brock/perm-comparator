@@ -98,10 +98,10 @@ public class ForceDotComOAuth2 extends Controller {
 		if (sess != null) {
 			Cache.safeDelete(session.getId() + "-oauth");
 			Logger.info("cache removed in logout:");
-			OAuthSession u = OAuthSession.get(sess.uid);
-			Logger.info("persistent session in logout:" + u);
-			if (u != null)
-				u.delete();
+//			OAuthSession u = OAuthSession.get(sess.uid);
+//			Logger.info("persistent session in logout:" + u);
+//			if (u != null)
+//				u.delete();
 		}
 		return true;
 	}
