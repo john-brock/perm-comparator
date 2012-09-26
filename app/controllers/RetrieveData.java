@@ -26,7 +26,7 @@ public class RetrieveData {
 	 * @return JsonObject with results
 	 */
 	public static JsonObject query(String query, boolean retry) {
-		Logger.info("query called");
+//		Logger.info("query called");
 		OAuthSession oauth = ForceDotComOAuth2.getOAuthSession();
 		if (oauth == null)
 			Application.index();
@@ -35,23 +35,23 @@ public class RetrieveData {
 				+ "/services/data/v25.0/query/?q=%s", query);
 		req.headers.put("Authorization", "OAuth " + oauth.access_token);
 		HttpResponse response = req.get();
-		Logger.info("response code is:" + response.getStatus());
+//		Logger.info("response code is:" + response.getStatus());
 
 		int res = response.getStatus();
 		if (res == 200) {
 			return response.getJson().getAsJsonObject().getAsJsonObject();
 			
 		} else if (res == 401) {
-			Logger.info("Calling refresh");
+//			Logger.info("Calling refresh");
 			retry = true;
 
 			ForceDotComOAuth2.refreshToken(
 					"https://login.salesforce.com/services/oauth2/token",
 					System.getenv("clientKey"), System.getenv("clientSecret"));
 
-			Logger.info("Refresh done");
+//			Logger.info("Refresh done");
 			query(query, retry);
-			Logger.info("query call done");
+//			Logger.info("query call done");
 		}
 		return null;
 	}
@@ -83,6 +83,7 @@ public class RetrieveData {
 			queryBuilder.append("Profile.Name FROM PermissionSet WHERE IsOwnedByProfile=true ORDER BY Profile.Name ");
 		
 		queryBuilder.append("ASC NULLS LAST LIMIT ").append(itemLimit);
+
 		return queryBuilder.toString();
 	}
 }

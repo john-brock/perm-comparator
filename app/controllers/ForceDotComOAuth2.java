@@ -34,7 +34,7 @@ public class ForceDotComOAuth2 extends Controller {
 	public static OAuthSession getOAuthSession() {
 		OAuthSession sess = (OAuthSession) Cache
 				.get(session.getId() + "-oauth");
-		Logger.info("Session in Cache is:" + sess);
+//		Logger.info("Session in Cache is:" + sess);
 		return sess;
 	}
 
@@ -56,7 +56,7 @@ public class ForceDotComOAuth2 extends Controller {
 
 		OAuthSession sess = (OAuthSession) Cache
 				.get(session.getId() + "-oauth");
-		Logger.info("sess in login is:" + sess);
+//		Logger.info("sess in login is:" + sess);
 		if (sess == null) {
 			if (isPersistentSession()) {
 				Http.Cookie userId = request.cookies.get("uid");
@@ -69,7 +69,7 @@ public class ForceDotComOAuth2 extends Controller {
 
 					if (Crypto.sign(id).equals(sign)) {
 						sess = OAuthSession.get(id);
-						Logger.info("persistent sess in login is:" + sess);
+//						Logger.info("persistent sess in login is:" + sess);
 						if (sess == null) {
 							response.removeCookie("uid");
 							initiateOAuthFlow(list);
@@ -117,7 +117,7 @@ public class ForceDotComOAuth2 extends Controller {
 	}
 
 	private static void initiateOAuthFlow(OAuthListner list) {
-		Logger.info("initiateOAuthFlow called");
+//		Logger.info("initiateOAuthFlow called");
 		Cache.set(session.getId() + "-listener", list);
 		throw new Redirect(authorizationURL
 				+ "?response_type=code&client_id="
@@ -128,7 +128,7 @@ public class ForceDotComOAuth2 extends Controller {
 	}
 
 	public static void callback() {
-		Logger.info("callback called");
+//		Logger.info("callback called");
 		OAuthListner listener = (OAuthListner) Cache.get(session.getId()
 				+ "-listener");
 		if (listener == null)
@@ -199,7 +199,7 @@ public class ForceDotComOAuth2 extends Controller {
 		HttpResponse response = WS.url(tokenURL).params(params).post();
 
 		JsonObject r = response.getJson().getAsJsonObject();
-		Logger.info("Refresh Token callout complete:" + r);
+//		Logger.info("Refresh Token callout complete:" + r);
 
 		String accessToken = r.getAsJsonPrimitive("access_token").getAsString();
 		if (accessToken != null) {
@@ -219,7 +219,7 @@ public class ForceDotComOAuth2 extends Controller {
 				currentSession.merge();
 			}
 		}
-		Logger.info("Done");
+//		Logger.info("Done");
 		return true;
 	}
 

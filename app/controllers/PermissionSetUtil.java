@@ -206,7 +206,7 @@ public class PermissionSetUtil {
 			}
 		}
 		jsonBuild.append(" }");
-		Logger.info("JSON RESULT: " + jsonBuild.toString());
+//		Logger.info("JSON RESULT: " + jsonBuild.toString());
 		return jsonBuild.toString();
 	}
 

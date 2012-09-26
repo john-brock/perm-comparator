@@ -15,7 +15,7 @@ import com.google.gson.*;
 
 public class Application extends Controller {
 
-	private static int QUERY_LIMIT = 10;
+	private static int QUERY_LIMIT = 200;
 	private static boolean retry = false;
 
 	// main function to render login or main page
