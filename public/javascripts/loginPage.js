@@ -48,6 +48,9 @@ Ext.onReady(function() {
         	  '<br><h2>Technology<h2>' +
         	  '<h3> - Frontend: ExtJS4<br> - Backend: Java with Play!<br> - Hosted on Heroku' +
         	  '<br> - Force.com REST API<h3>' + 
+        	  '<br><h2>v0.2 Updates<h2>' +
+        	  '<h3>1) Fix for user permissions not being retrieved<br>2) Ability to compare object permissions' +
+        	  '<br>3) UI fixes and updates<h3>' +
         	  '<br><h2>Open-Source<h2>' +
         	  '<a href="https://github.com/john-brock/perm-comparator"><h3>https://github/john-brock/perm-comparator</h3></a>',
         dockedItems: [{
