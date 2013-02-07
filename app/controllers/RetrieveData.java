@@ -26,33 +26,36 @@ public class RetrieveData {
 	 * @return JsonObject with results
 	 */
 	public static JsonObject query(String query, boolean retry) {
-//		Logger.info("query called");
 		OAuthSession oauth = ForceDotComOAuth2.getOAuthSession();
-		if (oauth == null)
+		if (oauth == null) {
 			Application.index();
-		
+		}
 		WSRequest req = WS.url(oauth.instance_url
-				+ "/services/data/v25.0/query/?q=%s", query);
+				+ "/services/data/v26.0/query/?q=%s", query);
 		req.headers.put("Authorization", "OAuth " + oauth.access_token);
 		HttpResponse response = req.get();
-//		Logger.info("response code is:" + response.getStatus());
 
 		int res = response.getStatus();
 		if (res == 200) {
 			return response.getJson().getAsJsonObject().getAsJsonObject();
 			
 		} else if (res == 401) {
-//			Logger.info("Calling refresh");
+			Logger.info("Response: 400 - Calling refresh for query");
 			retry = true;
 
 			ForceDotComOAuth2.refreshToken(
 					"https://login.salesforce.com/services/oauth2/token",
 					System.getenv("clientKey"), System.getenv("clientSecret"));
 
-//			Logger.info("Refresh done");
+			Logger.info("Refresh complete for query");
 			query(query, retry);
-//			Logger.info("query call done");
+			
+		} else if (res == 500) {
+			Logger.error("Response 500: Invalid query resulted in response code 500. Query was: %s", query);
+		} else {
+			Logger.error("Unexpected error. Response: %s", res);
 		}
+			
 		return null;
 	}
 	
@@ -85,5 +88,40 @@ public class RetrieveData {
 		queryBuilder.append("ASC NULLS LAST LIMIT ").append(itemLimit);
 
 		return queryBuilder.toString();
+	}
+	
+
+	/**
+	 * Calls the Describe method on PermissionSet via the Rest API to get the Permission Fields
+	 */
+	public static JsonObject getUserPerms(boolean retry) {
+		OAuthSession oauth = ForceDotComOAuth2.getOAuthSession();
+		if (oauth == null) {
+			Application.index();
+		}
+		WSRequest req = WS.url(oauth.instance_url
+				+ "/services/data/v26.0/sobjects/%s/describe/", "PermissionSet");
+		req.headers.put("Authorization", "OAuth " + oauth.access_token);
+		HttpResponse response = req.get();
+
+		int res = response.getStatus();
+		if (res == 200) {
+			return response.getJson().getAsJsonObject().getAsJsonObject();
+			
+		} else if (res == 401) {
+			Logger.info("Response: 400 - calling refresh in getUserPerms");
+			retry = true;
+
+			ForceDotComOAuth2.refreshToken(
+					"https://login.salesforce.com/services/oauth2/token",
+					System.getenv("clientKey"), System.getenv("clientSecret"));
+
+			Logger.info("Refresh done for getUserPerms");
+			getUserPerms(retry);
+			
+		} else {
+			Logger.error("Error occured attempting to retrieve user perms. Response code: %s", res);
+		}
+		return null;
 	}
 }

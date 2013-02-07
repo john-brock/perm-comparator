@@ -22,8 +22,14 @@ import java.io.Serializable;
  */
 public class ForceDotComOAuth2 extends Controller {
 
-	private static String authorizationURL;
-	private static String accessTokenURL;
+	private static final String AUTH_URL = "https://login.salesforce.com/services/oauth2/authorize";
+	private static final String TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
+	private static final String REVOKE_URL = "https://login.salesforce.com/services/oauth2/revoke";
+	
+//	private static final String AUTH_URL = "https://na1-blitz02.soma.salesforce.com/services/oauth2/authorize";
+//	private static final String TOKEN_URL = "https://na1-blitz02.soma.salesforce.com/services/oauth2/token";
+//	private static final String REVOKE_URL = "https://na1-blitz02.soma.salesforce.com/services/oauth2/revoke";
+	
 	private static String clientid;
 	private static String secret;
 
@@ -39,9 +45,7 @@ public class ForceDotComOAuth2 extends Controller {
 	}
 
 	public static boolean login(String clientId, String sec, OAuthListner list) {
-		return login("https://login.salesforce.com/services/oauth2/authorize",
-				"https://login.salesforce.com/services/oauth2/token", clientId,
-				sec, list);
+		return login(AUTH_URL, TOKEN_URL, clientId, sec, list);
 	}
 
 	public static boolean login(String authURL, String tokenURL,
@@ -49,8 +53,6 @@ public class ForceDotComOAuth2 extends Controller {
 		if (list == null)
 			return false;
 
-		authorizationURL = authURL;
-		accessTokenURL = tokenURL;
 		clientid = clientId;
 		secret = sec;
 
@@ -95,13 +97,21 @@ public class ForceDotComOAuth2 extends Controller {
 		response.removeCookie("uid");
 		OAuthSession sess = (OAuthSession) Cache
 				.get(session.getId() + "-oauth");
+		Map<String, Object> params = new HashMap();
+		params.put("token", sess.access_token);
+		HttpResponse revokeResponse = WS.url(REVOKE_URL).params(params).post();
+		if (!revokeResponse.success()) {
+			Logger.info("revoke response failed: " + revokeResponse.toString());
+		}
 		if (sess != null) {
 			Cache.safeDelete(session.getId() + "-oauth");
-			Logger.info("cache removed in logout:");
-//			OAuthSession u = OAuthSession.get(sess.uid);
+//			Logger.info("cache removed in logout:");
+			OAuthSession u = OAuthSession.get(sess.uid);
 //			Logger.info("persistent session in logout:" + u);
-//			if (u != null)
-//				u.delete();
+			if (u != null) {
+				u.delete();
+				Logger.info("persistent session removed");
+			}
 		}
 		return true;
 	}
@@ -119,7 +129,7 @@ public class ForceDotComOAuth2 extends Controller {
 	private static void initiateOAuthFlow(OAuthListner list) {
 //		Logger.info("initiateOAuthFlow called");
 		Cache.set(session.getId() + "-listener", list);
-		throw new Redirect(authorizationURL
+		throw new Redirect(AUTH_URL
 				+ "?response_type=code&client_id="
 				+ clientid
 				+ "&redirect_uri="
@@ -152,7 +162,7 @@ public class ForceDotComOAuth2 extends Controller {
 			params.put("redirect_uri",
 					play.mvc.Router.getFullUrl("ForceDotComOAuth2.callback"));
 			params.put("code", accessCode);
-			HttpResponse response = WS.url(accessTokenURL).params(params)
+			HttpResponse response = WS.url(TOKEN_URL).params(params)
 					.post();
 			JsonObject r = response.getJson().getAsJsonObject();
 

@@ -15,15 +15,18 @@ import com.google.gson.*;
 
 public class Application extends Controller {
 
-	private static int QUERY_LIMIT = 200;
+	private static int QUERY_LIMIT = 500;
 	private static boolean retry = false;
 
 	// main function to render login or main page
 	public static void index() {
-		if ((OAuthSession) Cache.get(session.getId() + "-oauth") != null)
+		if ((OAuthSession) Cache.get(session.getId() + "-oauth") != null) {
+			Logger.info("OAuth success - rendering index.html");
 			render("Application/index.html");
-		else
+		} else {
+			Logger.info("No OAuth session in cache - rendering login.html");
 			render("Application/login.html");
+		}
 	}
 	
 	public static JsonObject getUsers() {
@@ -39,10 +42,16 @@ public class Application extends Controller {
 	}
 	
 	// return string that looks like a Json response
-	public static String permsetDiffs(String id1, String id2, String id3, String id4) {
+	public static String userPermDiffs(String id1, String id2, String id3, String id4) {
+		Logger.info("Diffs - id1: %s, id2: %s, id3: %s, id4: %s",  id1, id2, id3, id4);
 		return PermissionSetUtil.comparePermsets(retry, id1, id2, id3, id4);
 	}
 	
+	// return string that looks like a Json response for object perm differences
+	public static String objectPermDiffs(String id1, String id2, String id3, String id4) {
+//		Logger.info("objectPermDiffs - id1: %s, id2: %s, id3: %s, id4: %s",  id1, id2, id3, id4);
+		return PermissionSetUtil.compareObjPerms(retry, id1, id2, id3, id4);
+	}
 	
 	// courtesy: @sbhanot-sfdc -- https://github.com/sbhanot-sfdc/Play-Force
 	public static void sforceLogin() {
@@ -52,7 +61,6 @@ public class Application extends Controller {
 					new ForceDotComOAuth2.OAuthListner() {
 						@Override
 						public void onSuccess(OAuthSession session) {
-							Logger.info("Session in callback is:" + session);
 							index();
 						}
 

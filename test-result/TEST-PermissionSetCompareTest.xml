@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testsuite failures="0" time="0.005" errors="0" skipped="0" tests="3" name="PermissionSetCompareTest">
+  <testcase classname="PermissionSetCompareTest" name="testCommonUserPerms" time="0.004">
+      </testcase>
+  <testcase classname="PermissionSetCompareTest" name="testUniqueUserPerms" time="0">
+      </testcase>
+  <testcase classname="PermissionSetCompareTest" name="testDifferingUserPerms" time="0.001">
+      </testcase>
+</testsuite>

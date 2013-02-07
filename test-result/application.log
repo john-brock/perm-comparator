@@ -1,0 +1,5 @@
+05 Feb 2013 22:07:49,008 INFO  ~ Starting /Users/jbrock/Documents/AdminApp/adminApp
+05 Feb 2013 22:07:52,113 WARN  ~ You're running Play! in DEV mode
+05 Feb 2013 22:07:52,391 INFO  ~ Listening for HTTPS on port 9000 (Waiting a first request to start) ...
+05 Feb 2013 22:08:19,605 INFO  ~ Connected to jdbc:h2:mem:play;MODE=MYSQL;LOCK_MODE=0
+05 Feb 2013 22:08:29,875 INFO  ~ Application 'adminApp' is now started !

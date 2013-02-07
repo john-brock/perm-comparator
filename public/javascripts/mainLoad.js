@@ -114,27 +114,44 @@ Ext.onReady(function() {
     var dragDropHeader = makeColumnPanel('', dropColumn1, dropColumn2, dropColumn3, dropColumn4, '0');
 
     // -- Views to fill compare panels --
-    var uPermStore1 = makePermStore('permset1_Unique');
-    var uPermStore2 = makePermStore('permset2_Unique');
-    var uPermStore3 = makePermStore('permset3_Unique');
-    var uPermStore4 = makePermStore('permset4_Unique');
+    // create stores to hold user perms
+    var uPermStore1 = makePermStore('permset1_User_Unique');
+    var uPermStore2 = makePermStore('permset2_User_Unique');
+    var uPermStore3 = makePermStore('permset3_User_Unique');
+    var uPermStore4 = makePermStore('permset4_User_Unique');
     
-    var uPermCommonStore1 = makePermStore('permset1_Common');
-    var uPermCommonStore2 = makePermStore('permset2_Common');
-    var uPermCommonStore3 = makePermStore('permset3_Common');
-    var uPermCommonStore4 = makePermStore('permset4_Common');
+    var uPermCommonStore1 = makePermStore('permset1_User_Common');
+    var uPermCommonStore2 = makePermStore('permset2_User_Common');
+    var uPermCommonStore3 = makePermStore('permset3_User_Common');
+    var uPermCommonStore4 = makePermStore('permset4_User_Common');
     
-    var uPermDifferencesStore1 = makePermStore('permset1_Differences');
-    var uPermDifferencesStore2 = makePermStore('permset2_Differences');
-    var uPermDifferencesStore3 = makePermStore('permset3_Differences');
-    var uPermDifferencesStore4 = makePermStore('permset4_Differences');
+    var uPermDifferencesStore1 = makePermStore('permset1_User_Differences');
+    var uPermDifferencesStore2 = makePermStore('permset2_User_Differences');
+    var uPermDifferencesStore3 = makePermStore('permset3_User_Differences');
+    var uPermDifferencesStore4 = makePermStore('permset4_User_Differences');
     
+    // create stores to hold obj perms
+    var objPermStore1 = makeTreeStore('permset1_Object_Unique', 'objPerms1Unique');
+    var objPermStore2 = makeTreeStore('permset2_Object_Unique', 'objPerms2Unique');
+    var objPermStore3 = makeTreeStore('permset3_Object_Unique', 'objPerms3Unique');
+    var objPermStore4 = makeTreeStore('permset4_Object_Unique', 'objPerms4Unique');
+
+    var objPermCommonStore1 = makeTreeStore('permset1_Object_Common', 'objPerms1Common');
+    var objPermCommonStore2 = makeTreeStore('permset2_Object_Common', 'objPerms2Common');
+    var objPermCommonStore3 = makeTreeStore('permset3_Object_Common', 'objPerms3Common');
+    var objPermCommonStore4 = makeTreeStore('permset4_Object_Common', 'objPerms4Common');
+
+    var objPermDifferencesStore1 = makeTreeStore('permset1_Object_Differences', 'objPerms1Diff');
+    var objPermDifferencesStore2 = makeTreeStore('permset2_Object_Differences', 'objPerms2Diff');
+    var objPermDifferencesStore3 = makeTreeStore('permset3_Object_Differences', 'objPerms3Diff');
+    var objPermDifferencesStore4 = makeTreeStore('permset4_Object_Differences', 'objPerms4Diff');
+
     // main store that will load data to specific user perm stores from 1 main json
     userPermStore = new Ext.data.Store({
     	storeId: 'userPermStoreId',
     	proxy: {
     		type: 'ajax',
-    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/get',
+    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getUserPerms',
 	        reader: {		
 	    		type: 'json',
 	        	fields : [ {name: 'name', type: 'string'} ]
@@ -143,6 +160,7 @@ Ext.onReady(function() {
     	fields:  [{name: 'name'} /*, {name: 'enabled'}*/],
     	listeners: {
     		load: function(store, records, successful) {
+    			// load user perm stores
     			uPermStore1.loadRawData(store.proxy.reader.jsonData);
     			uPermStore2.loadRawData(store.proxy.reader.jsonData);
     			uPermStore3.loadRawData(store.proxy.reader.jsonData);
@@ -163,7 +181,58 @@ Ext.onReady(function() {
     // load store Id so URL can be changed when items dropped for comparison
     userPermStoreId = Ext.StoreMgr.lookup("userPermStoreId");
 
-    // views for displaying unique user perms
+  // main store that will load data to specific object perm stores from 1 main json
+    objPermStore = new Ext.data.Store({
+    	storeId: 'objectPermStoreId',
+    	proxy: {
+    		type: 'ajax',
+    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms'
+//	        No reader since getting "raw" jsonData to load to appropriate individual stores
+//    		reader: {		
+//	    		type: 'json',
+//	    		fields: [{name: 'success', type: 'boolean'}, {name: 'text', type:'string'}, {name: 'children', type:'auto'}, {name: 'leaf', type: 'boolean'}, {name: 'expanded', type: 'boolean'}, {name: 'loaded', type:'boolean'}]
+//	        }
+    	},
+		fields: [{name: 'success'}, {name: 'text'}, {name: 'children'}, {name: 'leaf'}, {name: 'expanded'}, {name: 'loaded'}],
+    	listeners: {
+    		load: function(store, records, successful) {
+    			// load object perm stores
+    			objPermCommonStore1.proxy.data = store.proxy.reader.jsonData;
+    			objPermCommonStore1.load();
+    			objPermCommonStore2.proxy.data = store.proxy.reader.jsonData;
+    			objPermCommonStore2.load();
+    			objPermCommonStore3.proxy.data = store.proxy.reader.jsonData;
+    			objPermCommonStore3.load();
+    			objPermCommonStore4.proxy.data = store.proxy.reader.jsonData;
+    			objPermCommonStore4.load();
+    			
+    			objPermStore1.proxy.data = store.proxy.reader.jsonData;
+    			objPermStore1.load();
+    			objPermStore2.proxy.data = store.proxy.reader.jsonData;
+    			objPermStore2.load();
+    			objPermStore3.proxy.data = store.proxy.reader.jsonData;
+    			objPermStore3.load();
+    			objPermStore4.proxy.data = store.proxy.reader.jsonData;
+    			objPermStore4.load();
+
+    			objPermDifferencesStore1.proxy.data = store.proxy.reader.jsonData;
+    			objPermDifferencesStore1.load();
+    			objPermDifferencesStore2.proxy.data = store.proxy.reader.jsonData;
+    			objPermDifferencesStore2.load();
+    			objPermDifferencesStore3.proxy.data = store.proxy.reader.jsonData;
+    			objPermDifferencesStore3.load();
+    			objPermDifferencesStore4.proxy.data = store.proxy.reader.jsonData;
+    			objPermDifferencesStore4.load();
+    			
+                comparePanel = Ext.getCmp('comparePanelId'); 	// get the actual panel object
+                comparePanel.setLoading(false);					// remove loading mask once data is loaded
+    		}
+    	}
+    });
+    
+    objectPermStoreId = Ext.StoreMgr.lookup("objectPermStoreId");
+    
+    // views for displaying user perms
     var uPermView1 = makePermView(uPermStore1);
     var uPermView2 = makePermView(uPermStore2);
     var uPermView3 = makePermView(uPermStore3);
@@ -178,22 +247,41 @@ Ext.onReady(function() {
     var uPermDifferencesView2 = makePermView(uPermDifferencesStore2);
     var uPermDifferencesView3 = makePermView(uPermDifferencesStore3);
     var uPermDifferencesView4 = makePermView(uPermDifferencesStore4);
+
+    // views for displaying obj perms
+    var objPermView1 = makeTreeView(objPermStore1);
+    var objPermView2 = makeTreeView(objPermStore2);
+    var objPermView3 = makeTreeView(objPermStore3);
+    var objPermView4 = makeTreeView(objPermStore4);
+ 
+    var objPermCommonView1 = makeTreeView(objPermCommonStore1);
+    var objPermCommonView2 = makeTreeView(objPermCommonStore2);
+    var objPermCommonView3 = makeTreeView(objPermCommonStore3);
+    var objPermCommonView4 = makeTreeView(objPermCommonStore4);
+    
+    var objPermDifferencesView1 = makeTreeView(objPermDifferencesStore1);
+    var objPermDifferencesView2 = makeTreeView(objPermDifferencesStore2);
+    var objPermDifferencesView3 = makeTreeView(objPermDifferencesStore3);
+    var objPermDifferencesView4 = makeTreeView(objPermDifferencesStore4);
     
     // -- Make compare panels --
-    // column panels to hold perms for each of the compare items
+    // column panels to hold perms for each of the comparison categories
     var userPermUniques = makeColumnPanel('User Permissions', uPermView1, uPermView2, uPermView3, uPermView4);
     var userPermSims = makeColumnPanel('User Permissions', uPermCommonView1, uPermCommonView2, uPermCommonView3, uPermCommonView4);
     var userPermDiffs = makeColumnPanel('User Permissions', uPermDifferencesView1, uPermDifferencesView2, uPermDifferencesView3, uPermDifferencesView4);
-    // easy to add more of these column panels for object perms, FLS, ect.
+
+    // column panels to hold object perms for each comparison categories
+    var objPermUniques = makeColumnPanel('Object Permissions', objPermView1, objPermView2, objPermView3, objPermView4);
+    var objPermSims = makeColumnPanel('Object Permissions', objPermCommonView1, objPermCommonView2, objPermCommonView3, objPermCommonView4);
+    var objPermDiffs = makeColumnPanel('Object Permissions', objPermDifferencesView1, objPermDifferencesView2, objPermDifferencesView3, objPermDifferencesView4);
     
     // panels specific to unique, common, differing
-    var permsetUniques = makeComparisonPanel('Unique Perms', [userPermUniques]);
-    var permsetSimilarities = makeComparisonPanel('Common Perms', [userPermSims]);
-    var permsetDifferences = makeComparisonPanel('Differing Perms', [userPermDiffs]);
+    var permsetUniques = makeComparisonPanel('Unique Perms', [userPermUniques, objPermUniques]);
+    var permsetSimilarities = makeComparisonPanel('Common Perms', [userPermSims, objPermSims]);
+    var permsetDifferences = makeComparisonPanel('Differing Perms', [userPermDiffs, objPermDiffs]);
     
     // main compare panel for body of page
-    var comparePanel = makeComparisonPanel('', [permsetSimilarities, permsetUniques, permsetDifferences]);
-
+    var comparePanel = makeComparisonPanelWithId('', [permsetSimilarities, permsetUniques, permsetDifferences], 'comparePanelId');
 
     // -- Create body panel then whole page with header, navigation, and body panels --
     var mainPanel = Ext.create('Ext.Panel', {
@@ -295,6 +383,58 @@ function makePermStore(nameOfJsonRoot) {
     });
 }
 
+//make store used for storing object permissions for each item/permset
+function makeTreeStore(nameOfJsonRoot, storeId) {
+	return new Ext.create('Ext.data.TreeStore', {
+		storeId: storeId,
+		proxy: {
+			type: 'memory',
+			reader: {
+				type: 'json',
+				root: nameOfJsonRoot
+			}
+		},
+		fields: [{name: 'success'}, {name: 'text'}, {name: 'children'}, {name: 'leaf'}, {name: 'expanded'}, {name: 'loaded'}],
+	    folderSort: true,
+	    sorters: [{
+	        property: 'name',
+	        direction: 'ASC'
+	    }]
+	});
+}
+
+//make tree panel used to display object perms for each permset
+function makeTreeView(permStore) {
+    return new Ext.create('Ext.tree.Panel', {
+        store: permStore,
+        cls: 'tree-view',
+        trackMouseOver: false,
+        animate: false,
+        enableDD: false,
+        useArrows: false,
+        rootVisible: false,
+        border: false,
+        lines: false,
+        dockedItems: [{
+            xtype: 'toolbar',
+            scope: this,
+            items: [{
+                text: 'Expand All',
+                handler: function(button){
+                	var toolbar = button.up('toolbar'), treepanel = toolbar.up('treepanel');
+                    treepanel.expandAll();
+                }
+            }, {
+                text: 'Collapse All',
+                handler: function(button){
+                	var toolbar = button.up('toolbar'), treepanel = toolbar.up('treepanel');
+                    treepanel.collapseAll();
+                }
+            }]
+        }]
+    });
+}
+
 // view used for displaying Name and Id for Users, Permsets, and Profiles in left-hand Menu
 // - makes the items dragable with initializeDragZone call
 // EXTJS4 Drag Drop example was VERY helpful
@@ -326,6 +466,7 @@ function makePermView(permStore) {
     	hideHeaders: true,
     	padding: '0 0 0 0',
     	border: false,
+    	disableSelection: true,
     	columns: [{
     		dataIndex: 'name',
     		flex: 1
@@ -375,6 +516,18 @@ function makeComparisonPanel(panelName, panelItems) {
 	});
 }
 
+function makeComparisonPanelWithId(panelName, panelItems, panelId) {
+	return Ext.create('Ext.Panel', {
+		title: panelName,
+		id: panelId,
+    	cls: 'menu-accordion',
+		layout: 'accordion',
+		layoutConfig: {animate: true},
+		flex: 1,
+		items: panelItems,
+	});
+}
+
 // drop columns used for dropping items for comparisons
 function makeDropColumn(columnInfo) {
     return Ext.create('Ext.grid.Panel', {
@@ -383,6 +536,8 @@ function makeDropColumn(columnInfo) {
         border: false,
         sortableColumns: false,
         hideHeaders: true,
+    	disableSelection: true,
+    	overCls: 'none',
         store: {
         	fields: [{name: 'cName'}],
            	data: columnInfo
@@ -428,8 +583,13 @@ function clearAssignmentsFunction() {
 	id2 = 'blank';
 	id3 = 'blank';
 	id4 = 'blank';
-	userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/get';
+	
+    comparePanel = Ext.getCmp('comparePanelId'); // get the actual panel object
+    comparePanel.setLoading(true, true);
+	userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getUserPerms';
 	userPermStoreId.load();
+	objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms';
+	objectPermStoreId.load();
 }
 
 function clearRowBody(target) {
@@ -568,10 +728,16 @@ function initializeDestinationDropZone(v) {
         		idItem4 = target.id;
             	break;
             }
+
+            comparePanel = Ext.getCmp('comparePanelId'); 	// get the actual panel object
+            comparePanel.setLoading(true, true);			// set loading mask while we load data
             
-            userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/get';
+            userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getUserPerms';
             userPermStoreId.load();
 
+            objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms';
+            objectPermStoreId.load();
+            
             return true;
         }
     });

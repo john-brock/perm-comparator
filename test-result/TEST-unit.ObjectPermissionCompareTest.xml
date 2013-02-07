@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testsuite failures="0" time="0.021" errors="0" skipped="0" tests="10" name="unit.ObjectPermissionCompareTest">
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testOnePermset" time="0.017">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testNoCommonObjCommonPerms" time="0">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testCommonPerms" time="0">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testNoCommonObjUniquePerms" time="0.001">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testUniquePerms" time="0">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testUniqueSpecificPerm" time="0.001">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testNoCommonObjDifferingPerms" time="0.001">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testDifferingPerms" time="0">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="testDifferingSpecificPerm" time="0.001">
+      </testcase>
+  <testcase classname="unit.ObjectPermissionCompareTest" name="dummyTest" time="0">
+      </testcase>
+</testsuite>
