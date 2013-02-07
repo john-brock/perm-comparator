@@ -106,16 +106,16 @@ public class ForceDotComOAuth2 extends Controller {
 		if (sess != null) {
 			Cache.safeDelete(session.getId() + "-oauth");
 //			Logger.info("cache removed in logout:");
-			OAuthSession u = OAuthSession.get(sess.uid);
+//			OAuthSession u = OAuthSession.get(sess.uid);
 //			Logger.info("persistent session in logout:" + u);
-			if (u != null) {
-				u.delete();
-				Logger.info("persistent session removed");
-			}
+//			if (u != null) {
+//				u.delete();
+//				Logger.warn("persistent session should not be present");
+//			}
 		}
 		return true;
 	}
-
+	
 	/*
 	 * public User getUser() { }
 	 */

@@ -38,7 +38,7 @@ Ext.onReady(function() {
 	var body = Ext.create('Ext.Panel', {
     	cls: 'app-body',
         width: 500,
-        height: 350,
+        height: 450,
         frame: true,
         border: false,
         style: 'margin:0 auto;margin-top:5px;',
