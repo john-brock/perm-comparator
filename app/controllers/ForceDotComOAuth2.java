@@ -26,10 +26,6 @@ public class ForceDotComOAuth2 extends Controller {
 	private static final String TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
 	private static final String REVOKE_URL = "https://login.salesforce.com/services/oauth2/revoke";
 	
-//	private static final String AUTH_URL = "https://na1-blitz02.soma.salesforce.com/services/oauth2/authorize";
-//	private static final String TOKEN_URL = "https://na1-blitz02.soma.salesforce.com/services/oauth2/token";
-//	private static final String REVOKE_URL = "https://na1-blitz02.soma.salesforce.com/services/oauth2/revoke";
-	
 	private static String clientid;
 	private static String secret;
 

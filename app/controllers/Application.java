@@ -74,9 +74,24 @@ public class Application extends Controller {
 	}
 
 	public static void sforceLogout() {
+		String instanceURL = null;
+		
 		if (ForceDotComOAuth2.isLoggedIn()) {
+			instanceURL = ForceDotComOAuth2.getOAuthSession().instance_url;
 			ForceDotComOAuth2.logout();
 		}
-		index();
+		
+		String redirect = "3;URL=/";	// redirect string - default 3 seconds
+		if (instanceURL != null) {
+			String didSucceed = "Successful!";
+			instanceURL += "/secur/logout.jsp";
+			render("Application/logout.html", instanceURL, redirect, didSucceed);
+			
+		} else {
+			Logger.error("instanceURL was null on logout");
+			instanceURL = "";		// set empty string as instanceURL
+			redirect = "10;URL=/";	// set longer redirect timeout since logout failed
+			render("Application/logout.html", instanceURL, redirect);
+		}
 	}
 }

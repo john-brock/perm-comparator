@@ -297,7 +297,7 @@ Ext.onReady(function() {
     // clear assignments button
     var clearAssignments = Ext.create('Ext.button.Button', {
   	   text: 'Clear Assignments',
- 	   tooltip: 'Logout',
+ 	   tooltip: 'Clear selections',
  	   width: 150,
  	   height: 24,
  	   handler: clearAssignmentsFunction
