@@ -1,81 +1,130 @@
+<!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="/public/stylesheets/ext-all.css" />
-<script type="text/javascript" src="/public/javascripts/ext-all.js"></script>
-<script type="text/javascript" src="/public/javascripts/loginPage.js"></script>
 <style type="text/css">
 
-.app-header .x-panel-body {
-    background-color: #DFE8F6;
-    border-color: #15428B;
-    border-top-width: 0px;
-    border-right-width: 0px;
-    border-left-width: 0px;
-    border-bottom-width: 4px;
+/* body gradient courtesy of: http://ie.microsoft.com/testdrive/graphics/cssgradientbackgroundmaker/default.html*/
+body
+{
+	background-image: -webkit-linear-gradient(bottom, #FFFFFF 95%, #15428B 190%);
+	background-image: -moz-linear-gradient(bottom, #FFFFFF 95%, #15428B 190%);
+	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(.95, #FFFFFF), color-stop(1.9, #15428B));
+	background-image: linear-gradient(to top, #FFFFFF 95%, #15428B 90%);
+	background-repeat: no-repeat;
+	margin:0;
+	padding:0;
 }
 
-.app-header h1 {
-    font-family: verdana,arial,sans-serif;
-    font-size: 20px;
-    color: #15428B;
+div.image
+{
+	background:url(/public/images/preview.png);
+	background-repeat: no-repeat;
+	width: 48%;
+	height: 350px;
+	margin: 2%;
+	opacity:0.7;
+	float: left;
+	filter:alpha(opacity=70); /* For IE8 and earlier */
 }
 
-.app-body .x-panel-body {
-	background-color: #EFF4FD;
-	border-width: 0px;
+div.info
+{
+	width: 44%;
+	height:350px;
+	float: right;
+	margin: 2%;
+	background-color:#ffffff;
+	opacity:0.8;
+	filter:alpha(opacity=80); /* For IE8 and earlier */
 }
 
-.app-body h2 {
-    font-family: verdana,arial,sans-serif;
-    font-size: 14px;
-    color: #577CB8;
-    padding-top: 5px;
-}
-.app-body h3 {
-    font-family: verdana,arial,sans-serif;
-    font-size: 12px;
-    font-weight: lighter;
-    color: #577CB8;
-    padding-bottom: 5px;
+div.info p
+{
+  font-weight:bold;
+  font-size: 28px;
+  color:#15428B;
+  text-align: center;
+  vertical-align: middle;
 }
 
-.app-footer .x-panel-body {
-    background-color: #FFF;
-}
-.app-footer h2 {
-    font-family: verdana,arial,sans-serif;
-	font-style:italic;
-	font-size: 10px;
-	font-weight:lighter;
-	margin-left: auto;
-	margin-right: auto;
-	width: 54%;
+div.info h3
+{
+  font-weight: normal;
+  font-size: 14px;
+  color:#15428B;
+  text-align: center;
+  margin-top: 260px;
 }
 
-.login-button .x-column {
-	margin-left: auto;
-	margin-right: auto;
-	width: 70% !important;
-	float: center;
+/* Button CSS courtesy of: http://webdesignerwall.com/tutorials/css3-gradient-buttons */
+.button {
+	display: inline-block;
+	zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */
+	*display: inline;
+	vertical-align: baseline;
+	margin-right: 25%;
+	float: right;
+	width: 40%;
+	margin-top: 10%;
+	outline: none;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	font: 14px/100% Arial, Helvetica, sans-serif;
+	padding: .5em 2em .55em;
+	text-shadow: 0 1px 1px rgba(0,0,0,.3);
+	-webkit-border-radius: .5em; 
+	-moz-border-radius: .5em;
+	border-radius: .5em;
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+.button:hover {
+	text-decoration: none;
+}
+.button:active {
+	position: relative;
+	top: 1px;
 }
 
-.login-button .x-btn {
-	width: 100%;
+.large {
+	font-size: 24px;
+	padding: .4em 1.5em .42em;
 }
 
-.login-button .x-btn-default-small .x-btn-inner {
-    font-family: verdana,arial,sans-serif;
-    color: #15428B;
-    font-size: 20px;
+.green {
+	color: #e8f0de;
+	border: solid 1px #538312;
+	background: #64991e;
+	background: -webkit-gradient(linear, left top, left bottom, from(#7db72f), to(#4e7d0e));
+	background: -moz-linear-gradient(top,  #7db72f,  #4e7d0e);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#7db72f', endColorstr='#4e7d0e');
+}
+.green:hover {
+	background: #538018;
+	background: -webkit-gradient(linear, left top, left bottom, from(#6b9d28), to(#436b0c));
+	background: -moz-linear-gradient(top,  #6b9d28,  #436b0c);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#6b9d28', endColorstr='#436b0c');
+}
+.green:active {
+	color: #a9c08c;
+	background: -webkit-gradient(linear, left top, left bottom, from(#4e7d0e), to(#7db72f));
+	background: -moz-linear-gradient(top,  #4e7d0e,  #7db72f);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#4e7d0e', endColorstr='#7db72f');
 }
 
-.no-border .x-panel-body {
-	border-width: 2px;
-}
 
 </style>
 <title>PermComparator - Login</title>
 </head>
 <body>
+<div class="image"></div>
+	<div class="info">
+		<p> Compare Salesforce.com<br>Users, Profiles, and Permission Sets</p>
+		<a href="/login" class="button green large">Login</a>
+		<h3>For additional information: <a href="https://github.com/john-brock/perm-comparator/wiki/Perm-Comparator"> GitHub Wiki </a>
+		  &nbsp; tweet: @_johnbrock or _johnbrock@outlook.com</h3>
+	</div>
 </body>
 </html>
