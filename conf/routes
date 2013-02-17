@@ -21,5 +21,7 @@ GET 	/favicon.ico 	staticFile:/public/images/favicon.png
 GET     /public/                                	staticDir:public
 GET     /resources/                                	staticDir:resources
 
+GET		/mu-24d13487-4c2b118c-dc0a575d-280b7ccf.txt		staticFile:/public/mu-24d13487-4c2b118c-dc0a575d-280b7ccf.txt
+
 # Catch all
 *       /{controller}/{action}                  	{controller}.{action}
