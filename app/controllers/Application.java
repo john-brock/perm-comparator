@@ -17,6 +17,7 @@ public class Application extends Controller {
 
 	private static int QUERY_LIMIT = 500;
 	private static boolean retry = false;
+	private static final String sandboxParam = "sandboxLogin";
 
 	// main function to render login or main page
 	public static void index() {
@@ -55,9 +56,11 @@ public class Application extends Controller {
 	
 	// courtesy: @sbhanot-sfdc -- https://github.com/sbhanot-sfdc/Play-Force
 	public static void sforceLogin() {
+		String sBoxParam = params.get(sandboxParam);
+		boolean sandboxLogin = sBoxParam == null ? false : sBoxParam.contains("true");
+		if (sandboxLogin) { Logger.info("Sandbox login"); }
 		if (!ForceDotComOAuth2.isLoggedIn()) {
 			ForceDotComOAuth2.login(System.getenv("clientKey"), System.getenv("clientSecret"),
-
 					new ForceDotComOAuth2.OAuthListner() {
 						@Override
 						public void onSuccess(OAuthSession session) {
@@ -66,9 +69,15 @@ public class Application extends Controller {
 
 						@Override
 						public void onFailure(String error, String errorDesc) {
-							renderText("Auth failed" + error);
+							Logger.error(
+									"Error: %s. Description: %s",
+									error, errorDesc);
+							renderText(String
+									.format("OAuth was not able to complete authentication process. \n\nError: %s. Description: %s",
+											error, errorDesc));
 						}
-					});
+					}, 
+					sandboxLogin);
 		}
 		index();
 	}
@@ -85,12 +94,15 @@ public class Application extends Controller {
 		if (instanceURL != null) {
 			String didSucceed = "Successful!";
 			instanceURL += "/secur/logout.jsp";
+			Logger.info("Logout success");
+			
 			render("Application/logout.html", instanceURL, redirect, didSucceed);
 			
 		} else {
-			Logger.error("instanceURL was null on logout");
+			Logger.error("Logout failed. InstanceURL was null on logout");
 			instanceURL = "";		// set empty string as instanceURL
 			redirect = "10;URL=/";	// set longer redirect timeout since logout failed
+			
 			render("Application/logout.html", instanceURL, redirect);
 		}
 	}
