@@ -2,7 +2,7 @@ package controllers;
 
 import java.util.ArrayList;
 
-import controllers.PermissionSetUtil;
+import controllers.CompareUtils.BaseCompare;
 import models.OAuthSession;
 import models.PermissionSet;
 import play.Logger;
@@ -31,7 +31,7 @@ public class RetrieveData {
 			Application.index();
 		}
 		WSRequest req = WS.url(oauth.instance_url
-				+ "/services/data/v26.0/query/?q=%s", query);
+				+ "/services/data/v28.0/query/?q=%s", query);
 		req.headers.put("Authorization", "OAuth " + oauth.access_token);
 		HttpResponse response = req.get();
 

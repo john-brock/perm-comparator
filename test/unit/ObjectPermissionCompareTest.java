@@ -1,7 +1,8 @@
 package unit;
 import org.junit.*;
 
-import controllers.PermissionSetUtil;
+import controllers.CompareUtils.CompareObjectPerms;
+import controllers.CompareUtils.BaseCompare;
 
 import java.util.*;
 
@@ -43,7 +44,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 	
 	@Test
 	public void testOnePermset() {
-		PermissionSetUtil.classifyObjectPerms(new PermissionSet[] {permset1});
+		CompareObjectPerms.classifyObjectPerms(new PermissionSet[] {permset1});
 		
     	Map<String, EnumSet<objectPermissions>> permsetObjPermMap = permset1.getOjPermMap(ObjPermCategory.common);
     	checkObjPermKeys(permsetObjPermMap, obj1Map);
@@ -59,7 +60,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 	
     @Test
     public void testNoCommonObjCommonPerms() {
-		PermissionSetUtil.classifyObjectPerms(permsets);
+		CompareObjectPerms.classifyObjectPerms(permsets);
 
 		Map<String, EnumSet<objectPermissions>> permset1Map = permset1.getOjPermMap(ObjPermCategory.common);
 		Map<String, EnumSet<objectPermissions>> permset2Map = permset2.getOjPermMap(ObjPermCategory.common);
@@ -76,7 +77,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 		obj1Map.put(obj2, obj2Perms.clone());
 		permset1.setObjPermMap(ObjPermCategory.original, obj1Map);
 		
-		PermissionSetUtil.classifyObjectPerms(permsets);
+		CompareObjectPerms.classifyObjectPerms(permsets);
 
 		Map<String, EnumSet<objectPermissions>> permset1Map = permset1.getOjPermMap(ObjPermCategory.common);
 		Map<String, EnumSet<objectPermissions>> permset2Map = permset2.getOjPermMap(ObjPermCategory.common);
@@ -90,7 +91,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     
     @Test
     public void testNoCommonObjUniquePerms() {
-		PermissionSetUtil.classifyObjectPerms(permsets);
+    	CompareObjectPerms.classifyObjectPerms(permsets);
 
     	Map<String, EnumSet<objectPermissions>> permset1Map = permset1.getOjPermMap(ObjPermCategory.unique);
     	Map<String, EnumSet<objectPermissions>> permset2Map = permset2.getOjPermMap(ObjPermCategory.unique);
@@ -107,7 +108,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 		obj1Map.put(obj2, obj2Perms.clone());
 		permset1.setObjPermMap(ObjPermCategory.original, obj1Map);
 		
-		PermissionSetUtil.classifyObjectPerms(permsets);
+		CompareObjectPerms.classifyObjectPerms(permsets);
 
     	Map<String, EnumSet<objectPermissions>> permset1map = permset1.getOjPermMap(ObjPermCategory.unique);
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.unique);
@@ -125,7 +126,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	obj1Map.put(obj2, EnumSet.of(sharedPerm));
 		permset1.setObjPermMap(ObjPermCategory.original, obj1Map);
 		
-		PermissionSetUtil.classifyObjectPerms(permsets);
+		CompareObjectPerms.classifyObjectPerms(permsets);
 
     	Map<String, EnumSet<objectPermissions>> permset1map = permset1.getOjPermMap(ObjPermCategory.unique);
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.unique);
@@ -141,7 +142,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     
     @Test
     public void testNoCommonObjDifferingPerms() {
-		PermissionSetUtil.classifyObjectPerms(permsets);
+    	CompareObjectPerms.classifyObjectPerms(permsets);
 
     	Map<String, EnumSet<objectPermissions>> permset1map = permset1.getOjPermMap(ObjPermCategory.differing);
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.differing);
@@ -158,7 +159,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 		obj1Map.put(obj2, obj2Perms.clone());
 		permset1.setObjPermMap(ObjPermCategory.original, obj1Map);
 		
-    	PermissionSetUtil.classifyObjectPerms(permsets);
+		CompareObjectPerms.classifyObjectPerms(permsets);
 
     	Map<String, EnumSet<objectPermissions>> permset1map = permset1.getOjPermMap(ObjPermCategory.differing);
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.differing);
@@ -176,7 +177,7 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	obj1Map.put(obj2, EnumSet.of(sharedObj2Perm));
 		permset1.setObjPermMap(ObjPermCategory.original, obj1Map);
 		
-    	PermissionSetUtil.classifyObjectPerms(permsets);
+		CompareObjectPerms.classifyObjectPerms(permsets);
 
     	Map<String, EnumSet<objectPermissions>> permset1map = permset1.getOjPermMap(ObjPermCategory.differing);
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.differing);

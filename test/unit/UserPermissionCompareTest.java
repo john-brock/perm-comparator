@@ -1,7 +1,8 @@
 package unit;
 import org.junit.*;
 
-import controllers.PermissionSetUtil;
+import controllers.CompareUtils.CompareUserPerms;
+import controllers.CompareUtils.BaseCompare;
 
 import java.util.*;
 import play.test.*;
@@ -22,7 +23,7 @@ public class UserPermissionCompareTest extends BaseUnitTest {
     	permset2.setUserPerms(user2Perms);
 
     	PermissionSet[] permsets = new PermissionSet[] {permset1, permset2};
-		PermissionSetUtil.classifyUserPerms(permsets);
+		CompareUserPerms.classifyUserPerms(permsets);
 	}
 	
     @Test

@@ -25,16 +25,9 @@ public class BaseUnitTest extends UnitTest {
 					actualPerms.contains(perm));
 		}
     }
-	
-//    public <T> void checkCommonPerms(Set<T> expectedCommonPerms, PermissionSet... permsets) {
-//		for (PermissionSet permset : permsets) {
-//			Set<T> actualCommonPerms = permset.getCommonUserPerms();
-//			checkPerms(permset, expectedCommonPerms, actualCommonPerms);
-//		}
-//    }
-	
+
 	@Test
-	public void dummyTest() {
-		assertTrue(true);
+	public void testDummy() {
+		// used when running tests -- required to have test method
 	}
 }
