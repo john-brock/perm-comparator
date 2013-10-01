@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-
-<testsuite failures="0" time="0" errors="0" skipped="0" tests="1" name="PermSetCompareTest">
-  <testcase classname="PermSetCompareTest" name="testCompareUserPerms" time="0">
-      </testcase>
-</testsuite>
