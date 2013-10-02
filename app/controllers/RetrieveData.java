@@ -2,23 +2,31 @@ package controllers;
 
 import java.util.ArrayList;
 
+import javax.mail.Session;
+
 import controllers.CompareUtils.BaseCompare;
 import models.OAuthSession;
 import models.PermissionSet;
 import play.Logger;
+import play.cache.Cache;
 import play.libs.WS;
 import play.libs.WS.HttpResponse;
 import play.libs.WS.WSRequest;
+import play.mvc.Controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /*
  * Reference: Play-ing in Java - By SANDEEP BHANOT
  * http://blogs.developerforce.com/developer-relations/2011/08/play-ing-in-java.html
  * https://github.com/sbhanot-sfdc/Play-Force
  */
-public class RetrieveData {
+public class RetrieveData extends Controller {
 	
 	/**
 	 * Use Force.com API to retrieve data (authentication with OAuth). Returns JsonObject.
@@ -99,29 +107,39 @@ public class RetrieveData {
 		if (oauth == null) {
 			Application.index();
 		}
-		WSRequest req = WS.url(oauth.instance_url
-				+ "/services/data/v28.0/sobjects/%s/describe/", "PermissionSet");
-		req.headers.put("Authorization", "OAuth " + oauth.access_token);
-		HttpResponse response = req.get();
-
-		int res = response.getStatus();
-		if (res == 200) {
-			return response.getJson().getAsJsonObject().getAsJsonObject();
-			
-		} else if (res == 401) {
-			Logger.info("Response: 400 - calling refresh in getUserPerms");
-			retry = true;
-
-			ForceDotComOAuth2.refreshToken(
-					"https://login.salesforce.com/services/oauth2/token",
-					System.getenv("clientKey"), System.getenv("clientSecret"));
-
-			Logger.info("Refresh done for getUserPerms");
-			getUserPerms(retry);
-			
+		
+		String userPerms = Cache.get(session.getId() + "-userperms", String.class);
+		if (userPerms != null) {
+			// cache hit
+			return new JsonParser().parse(userPerms).getAsJsonObject();
 		} else {
-			Logger.error("Error occured attempting to retrieve user perms. Response code: %s", res);
+			// cache miss
+			WSRequest req = WS.url(oauth.instance_url
+					+ "/services/data/v28.0/sobjects/%s/describe/", "PermissionSet");
+			req.headers.put("Authorization", "OAuth " + oauth.access_token);
+			HttpResponse response = req.get();
+	
+			int res = response.getStatus();
+			if (res == 200) {
+				JsonElement jsonResult = response.getJson();
+				Cache.set(session.getId() + "-userperms", jsonResult.toString(), "5mn");
+				return jsonResult.getAsJsonObject();
+				
+			} else if (res == 401) {
+				Logger.info("Response: 400 - calling refresh in getUserPerms");
+				retry = true;
+	
+				ForceDotComOAuth2.refreshToken(
+						"https://login.salesforce.com/services/oauth2/token",
+						System.getenv("clientKey"), System.getenv("clientSecret"));
+	
+				Logger.info("Refresh done for getUserPerms");
+				getUserPerms(retry);
+				
+			} else {
+				Logger.error("Error occured attempting to retrieve user perms. Response code: %s", res);
+			}
 		}
-		return null;
+		return null;	// shouln't get get here, but need default return
 	}
 }
