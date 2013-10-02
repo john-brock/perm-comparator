@@ -58,7 +58,7 @@ public class CompareSetupEntityPerms extends BaseCompare {
 	}
 	
 	public static String compareSetupEntityPerms(boolean retry, String... ids) {
-		PermissionSet[] permsets = getPermsetArray(retry, ids);
+		PermissionSet[] permsets = getPermsetArray(retry, SETUP_ENTITY_PERMS, ids);
 		classifySetupEntityPerms(permsets);
 
 		return generatePermsJson(permsets, SETUP_ENTITY_PERMS);
@@ -224,8 +224,8 @@ public class CompareSetupEntityPerms extends BaseCompare {
 		Map<SetupEntityTypes, Set<String>> seaPermMap = new HashMap();
 
 		StringBuilder permsetRoot = new StringBuilder();
-//		permsetRoot.append("permset").append(i+1).append(SETUP_ENTITY_PERMS);
-		permsetRoot.append("permset").append(i+1).append(OBJECT);
+		permsetRoot.append("permset").append(i+1).append(SETUP_ENTITY_PERMS);
+		//permsetRoot.append("permset").append(i+1).append(OBJECT);
 		if (permCategory.equals(UNIQUE)) {
 			seaPermMap = permset.getSeaPermMap(ObjPermCategory.unique);
 			permsetRoot.append(UNIQUE);

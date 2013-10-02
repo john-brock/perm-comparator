@@ -14,6 +14,7 @@ import org.apache.commons.collections.map.HashedMap;
 
 import play.Logger;
 
+import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -63,13 +64,13 @@ public class CompareObjectPerms extends BaseCompare {
 	
 	/**
 	 * Query for object perms associated with given userId and place data in Map
-	 * @param userId
+	 * @param parentId
 	 */
 	protected static Map<String, EnumSet<PermissionSet.objectPermissions>> getObjectPermsMap(
-			String userId, boolean retry) {
-		String query = buildObjPermQuery(userId);
-		Map<String, EnumSet<PermissionSet.objectPermissions>> objPermMap = new HashedMap();
-//		Logger.info("QUERY: " + query);
+			String parentId, boolean retry) {
+		String query = buildObjPermQuery(parentId);
+		Map<String, EnumSet<PermissionSet.objectPermissions>> objPermMap = Maps.newHashMap();
+		Logger.info("QUERY: " + query);
 		JsonObject objPermResults = RetrieveData.query(query, retry);
 		JsonArray objPermRows = null;
 		if (objPermResults != null) {
@@ -89,17 +90,18 @@ public class CompareObjectPerms extends BaseCompare {
 					objPerms.add(objPerm);
 				}
 			}
-			// if multiple rows for same object, merge sets to get aggregate set
+			// if multiple rows for same object, merge sets for aggregate
 			if (objPermMap.containsKey(objName)) {
 				objPerms.addAll(objPermMap.get(objName));
 			}
 			objPermMap.put(objName, objPerms);
 		}
+		Logger.info("OBJ_PERM_MAP: %s", objPermMap);
 		return objPermMap;
 	}
 	
 	public static String compareObjPerms(boolean retry, String... ids) {
-		PermissionSet[] permsets = getPermsetArray(retry, ids);
+		PermissionSet[] permsets = getPermsetArray(retry, OBJECT_PERMS, ids);
 		classifyObjectPerms(permsets);
 
 		return generatePermsJson(permsets, OBJECT_PERMS);

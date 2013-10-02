@@ -100,7 +100,7 @@ public class RetrieveData {
 			Application.index();
 		}
 		WSRequest req = WS.url(oauth.instance_url
-				+ "/services/data/v26.0/sobjects/%s/describe/", "PermissionSet");
+				+ "/services/data/v28.0/sobjects/%s/describe/", "PermissionSet");
 		req.headers.put("Authorization", "OAuth " + oauth.access_token);
 		HttpResponse response = req.get();
 

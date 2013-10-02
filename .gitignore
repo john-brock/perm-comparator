@@ -11,3 +11,4 @@ eclipse/
 conf/host.cert
 conf/host.key
 conf/application.conf
+test-result/

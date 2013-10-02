@@ -47,15 +47,15 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 		CompareObjectPerms.classifyObjectPerms(new PermissionSet[] {permset1});
 		
     	Map<String, EnumSet<objectPermissions>> permsetObjPermMap = permset1.getOjPermMap(ObjPermCategory.common);
-    	checkObjPermKeys(permsetObjPermMap, obj1Map);
+    	checkObjPermKeys(obj1Map, permsetObjPermMap);
     	checkPerms(permset1, obj1Perms, permsetObjPermMap.get(obj1));
     	
     	permsetObjPermMap = permset1.getOjPermMap(ObjPermCategory.unique);
-    	checkObjPermKeys(permsetObjPermMap, obj1Map);
+    	checkObjPermKeys(obj1Map, permsetObjPermMap);
     	checkPerms(permset1, obj1Perms, permsetObjPermMap.get(obj1));
     	
     	permsetObjPermMap = permset1.getOjPermMap(ObjPermCategory.differing);
-    	checkObjPermKeys(permsetObjPermMap, new HashMap<String, EnumSet<objectPermissions>>());
+    	checkObjPermKeys(new HashMap<String, EnumSet<objectPermissions>>(), permsetObjPermMap);
 	}
 	
     @Test
@@ -68,8 +68,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 		Map<String, EnumSet<objectPermissions>> emptyMap = new HashMap();
 
 		// no common perms --> no 'keys' in the common obj perm map
-		checkObjPermKeys(permset1Map, emptyMap);
-		checkObjPermKeys(permset2Map, emptyMap);
+		checkObjPermKeys(emptyMap, permset1Map);
+		checkObjPermKeys(emptyMap, permset2Map);
     }
     
     @Test
@@ -85,8 +85,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
 		Map<String, EnumSet<objectPermissions>> commonMap = new HashMap();
 		commonMap.put(obj2, obj2Perms);  // common between permset1 and permset2
 		
-		checkObjPermKeys(permset1Map, commonMap);
-		checkObjPermKeys(permset2Map, commonMap);
+		checkObjPermKeys(commonMap, permset1Map);
+		checkObjPermKeys(commonMap, permset2Map);
     }
     
     @Test
@@ -96,8 +96,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	Map<String, EnumSet<objectPermissions>> permset1Map = permset1.getOjPermMap(ObjPermCategory.unique);
     	Map<String, EnumSet<objectPermissions>> permset2Map = permset2.getOjPermMap(ObjPermCategory.unique);
     	
-    	checkObjPermKeys(permset1Map, obj1Map);
-    	checkObjPermKeys(permset2Map, obj2Map);
+    	checkObjPermKeys(obj1Map, permset1Map);
+    	checkObjPermKeys(obj2Map, permset2Map);
     	
     	checkPerms(permset1, obj1Perms, permset1Map.get(obj1));
     	checkPerms(permset2, obj2Perms, permset2Map.get(obj2));
@@ -114,8 +114,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.unique);
 
     	obj1Map.remove(obj2);  // obj2 is common between permset1 and permset2
-    	checkObjPermKeys(permset1map, obj1Map);
-    	checkObjPermKeys(permset2map, new HashMap<String, EnumSet<objectPermissions>>());  // no keys (no unique)
+    	checkObjPermKeys(obj1Map, permset1map);
+    	checkObjPermKeys(new HashMap<String, EnumSet<objectPermissions>>(), permset2map);  // no keys (no unique)
     	
     	checkPerms(permset1, obj1Perms, permset1map.get(obj1));
     }
@@ -132,8 +132,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.unique);
 
     	obj1Map.remove(obj2);  // obj2 is common between permset1 and permset2
-    	checkObjPermKeys(permset1map, obj1Map);
-    	checkObjPermKeys(permset2map, obj2Map);  // has common obj2 perm, but also 1 unique perm
+    	checkObjPermKeys(obj1Map, permset1map);
+    	checkObjPermKeys(obj2Map, permset2map);  // has common obj2 perm, but also 1 unique perm
     	
     	checkPerms(permset1, obj1Perms, permset1map.get(obj1));
     	obj2Perms.remove(sharedPerm);  // unique perm is obj2 edit
@@ -147,8 +147,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	Map<String, EnumSet<objectPermissions>> permset1map = permset1.getOjPermMap(ObjPermCategory.differing);
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.differing);
 
-    	checkObjPermKeys(permset1map, obj1Map);
-    	checkObjPermKeys(permset2map, obj2Map);
+    	checkObjPermKeys(obj1Map, permset1map);
+    	checkObjPermKeys(obj2Map, permset2map);
 
     	checkPerms(permset1, obj1Perms, permset1map.get(obj1));
     	checkPerms(permset2, obj2Perms, permset2map.get(obj2));
@@ -165,8 +165,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.differing);
 
     	obj1Map.remove(obj2);  // differing should not have a common object
-    	checkObjPermKeys(permset1map, obj1Map);
-    	checkObjPermKeys(permset2map, new HashMap<String, EnumSet<objectPermissions>>()); // should be empty map
+    	checkObjPermKeys(obj1Map, permset1map);
+    	checkObjPermKeys(new HashMap<String, EnumSet<objectPermissions>>(), permset2map); // should be empty map
 
     	checkPerms(permset1, obj1Perms, permset1map.get(obj1));
     }
@@ -183,8 +183,8 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	Map<String, EnumSet<objectPermissions>> permset2map = permset2.getOjPermMap(ObjPermCategory.differing);
 
     	obj1Map.remove(obj2);  // differing should not have a common object
-    	checkObjPermKeys(permset1map, obj1Map);
-    	checkObjPermKeys(permset2map, obj2Map);  // should still contain obj2 key
+    	checkObjPermKeys(obj1Map, permset1map);
+    	checkObjPermKeys(obj2Map, permset2map);  // should still contain obj2 key
 
     	checkPerms(permset1, obj1Perms, permset1map.get(obj1));
     	
@@ -192,12 +192,11 @@ public class ObjectPermissionCompareTest extends BaseUnitTest {
     	checkPerms(permset2, obj2Perms, permset2map.get(obj2));
     }
     
-	private void checkObjPermKeys(Map<String, EnumSet<objectPermissions>> objPermMap, Map<String, EnumSet<objectPermissions>> expectedPermMap) {
+	private void checkObjPermKeys(Map<String, EnumSet<objectPermissions>> expectedPermMap, Map<String, EnumSet<objectPermissions>> objPermMap) {
 		Set<String> actualKeys = objPermMap.keySet();
 		Set<String> expectedKeys = expectedPermMap.keySet();
 		
-		assertTrue(String.format("ObjPermMap should contain %s key(s) but contained %s", expectedKeys.size(), actualKeys.size()), 
-    			actualKeys.size() == expectedKeys.size());
+		assertEquals("ObjPermMap did not contain the same number of keys.", expectedKeys.size(), actualKeys.size());
     	for (String key : expectedKeys) {
     		assertTrue("ObjPermMap should have contained key " + key, actualKeys.contains(key));
     	}

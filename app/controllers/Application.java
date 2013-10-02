@@ -13,6 +13,10 @@ import models.*;
 
 import com.google.gson.*;
 
+import controllers.CompareUtils.CompareObjectPerms;
+import controllers.CompareUtils.CompareSetupEntityPerms;
+import controllers.CompareUtils.CompareUserPerms;
+
 public class Application extends Controller {
 
 	private static int QUERY_LIMIT = 500;
@@ -45,13 +49,37 @@ public class Application extends Controller {
 	// return string that looks like a Json response
 	public static String userPermDiffs(String id1, String id2, String id3, String id4) {
 		Logger.info("Diffs - id1: %s, id2: %s, id3: %s, id4: %s",  id1, id2, id3, id4);
-		return PermissionSetUtil.comparePermsets(retry, id1, id2, id3, id4);
+		
+		long timestart = System.currentTimeMillis();
+		String returnString = CompareUserPerms.compareUserPerms(retry, id1, id2, id3, id4);
+		long endtime = System.currentTimeMillis();
+		Logger.info("UserPerm comp took: %d milliseconds", (endtime - timestart));
+
+		return returnString;
 	}
 	
 	// return string that looks like a Json response for object perm differences
 	public static String objectPermDiffs(String id1, String id2, String id3, String id4) {
-//		Logger.info("objectPermDiffs - id1: %s, id2: %s, id3: %s, id4: %s",  id1, id2, id3, id4);
-		return PermissionSetUtil.compareObjPerms(retry, id1, id2, id3, id4);
+		Logger.info("objectPermDiffs - id1: %s, id2: %s, id3: %s, id4: %s",  id1, id2, id3, id4);
+
+		long timestart = System.currentTimeMillis();
+		String returnString = CompareObjectPerms.compareObjPerms(retry, id1, id2, id3, id4);
+		long endtime = System.currentTimeMillis();
+		Logger.info("ObjectPerm comp took: %d milliseconds", (endtime - timestart));
+
+		return returnString;
+	}
+
+	// return string that looks like a Json response for SetupEntityAccess perm differences
+	public static String setupEntityPermDiffs(String id1, String id2, String id3, String id4) {
+		Logger.info("setupEntityPermDiffs - id1: %s, id2: %s, id3: %s, id4: %s",  id1, id2, id3, id4);
+
+		long timestart = System.currentTimeMillis();
+		String returnString = CompareSetupEntityPerms.compareSetupEntityPerms(retry, id1, id2, id3, id4);
+		long endtime = System.currentTimeMillis();
+		Logger.info("SEAPerm comp took: %d milliseconds", (endtime - timestart));
+		
+		return returnString;		
 	}
 	
 	// courtesy: @sbhanot-sfdc -- https://github.com/sbhanot-sfdc/Play-Force

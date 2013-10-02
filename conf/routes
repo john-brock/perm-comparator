@@ -8,8 +8,9 @@ GET     /login										Application.sforceLogin
 GET		/logout										Application.sforceLogout
 
 # Permission set comparisons
-GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getUserPerms	Application.userPermDiffs
-GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getObjPerms	Application.objectPermDiffs
+GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getUserPerms			Application.userPermDiffs
+GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getObjPerms			Application.objectPermDiffs
+GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getSetupEntityPerms	Application.setupEntityPermDiffs
 
 # Main page functions
 GET 	/{item}/get									Application.get{item}

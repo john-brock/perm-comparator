@@ -7,6 +7,7 @@ import java.util.TreeSet;
 
 import play.Logger;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -14,12 +15,14 @@ import controllers.RetrieveData;
 
 
 import models.PermissionSet;
+import models.PermissionSet.ObjPermCategory;
+import models.PermissionSet.SetupEntityTypes;
 
 public class CompareUserPerms extends BaseCompare {
 
 	
 	public static String compareUserPerms(boolean retry, String... ids) {
-		PermissionSet[] permsets = getPermsetArray(retry, ids);
+		PermissionSet[] permsets = getPermsetArray(retry, USER_PERMS, ids);
 		classifyUserPerms(permsets);
 
 		return generatePermsJson(permsets, USER_PERMS);
@@ -51,6 +54,20 @@ public class CompareUserPerms extends BaseCompare {
 	}
 	
 	/**
+	 * Build SOQL query string for all permissions
+	 * @param permsetId
+	 */
+	protected static String userPermQueryBuilder(String permsetId, Set<String> userPerms) {
+		StringBuilder queryBuild = new StringBuilder();
+		queryBuild.append("SELECT ");
+
+		appendParamsToQuery(queryBuild, USER_PERMS, userPerms);
+		queryBuild.append(" FROM PermissionSet WHERE Id=\'").append(permsetId).append("\'");
+
+		return queryBuild.toString();
+	}
+	
+	/**
 	 * Add permissions that are set to true for the PermissionSet
 	 * @param permset
 	 * @param permsetInfo
@@ -58,7 +75,7 @@ public class CompareUserPerms extends BaseCompare {
 	protected static void addPermsToPermset(PermissionSet permset, boolean retry) {
 		Set<String> userPerms = CompareUserPerms.retrieveValidUserPerms();
 
-		String query = queryBuilder(permset.getId(), userPerms);
+		String query = userPermQueryBuilder(permset.getId(), userPerms);
 		JsonObject permsetInfo = RetrieveData.query(query, retry).get("records").getAsJsonArray().get(0).getAsJsonObject();
 		if (permsetInfo == null) {
 			Logger.warn("PermsetInfo is null after query in getPermissionSet. Query: %s", query);
@@ -73,7 +90,7 @@ public class CompareUserPerms extends BaseCompare {
 			}
 		}
 	}
-	
+
 	/**
 	 * Performs comparison operations on effective perms to find Unique, Common, and Differences.
 	 * Sets respective EnumSet on the permission set object

@@ -46,20 +46,6 @@ public class BaseCompare {
 	protected static final String USER_PERMS = "UserPerms";
 	protected static final String OBJECT_PERMS = "ObjectPerms";
 	protected static final String SETUP_ENTITY_PERMS = "SetupEntityPerms";
-	
-	/**
-	 * Build SOQL query string for all permissions
-	 * @param permsetId
-	 */
-	protected static String queryBuilder(String permsetId, Set<String> userPerms) {
-		StringBuilder queryBuild = new StringBuilder();
-		queryBuild.append("SELECT ");
-
-		appendParamsToQuery(queryBuild, USER_PERMS, userPerms);
-		queryBuild.append(" FROM PermissionSet WHERE Id=\'").append(permsetId).append("\'");
-
-		return queryBuild.toString();
-	}
 
 	/**
 	 * Append permissions to query from PermissionSet
@@ -95,14 +81,21 @@ public class BaseCompare {
 	 * Creates new permission set object to hold perms for comparisons.
 	 * Fills user perms before returning object based on permsetId
 	 * @param permsetId
+	 * @param compareType
 	 * @param retry
 	 */
-	public static PermissionSet getPermissionSet(String permsetId, boolean retry) {
+	public static PermissionSet getPermissionSet(String permsetId, String compareType, boolean retry) {
 		PermissionSet permset = new PermissionSet(permsetId);
 
-		CompareUserPerms.addPermsToPermset(permset, retry);
-		CompareObjectPerms.addPermsToPermset(permset, retry);
-		CompareSetupEntityPerms.addPermsToPermset(permset, retry);
+		if (USER_PERMS.equals(compareType)) {
+			CompareUserPerms.addPermsToPermset(permset, retry);
+			
+		} else if (OBJECT_PERMS.equals(compareType)) {
+			CompareObjectPerms.addPermsToPermset(permset, retry);
+			
+		} else if (SETUP_ENTITY_PERMS.equals(compareType)) {
+			CompareSetupEntityPerms.addPermsToPermset(permset, retry);
+		}
 		
 		return permset;
 	}
@@ -135,7 +128,7 @@ public class BaseCompare {
 	 * @param ids - ids (can be user, permission set, or profile)
 	 * @return PermissionSet[]
 	 */
-	protected static PermissionSet[] getPermsetArray(boolean retry, String... ids) {
+	protected static PermissionSet[] getPermsetArray(boolean retry, String compareType,String... ids) {
 		int numberOfIds = ids.length;
 		PermissionSet[] permsets = new PermissionSet[numberOfIds];
 		
@@ -145,11 +138,11 @@ public class BaseCompare {
 				permsets[i] = null;
 			} else {
 				if (id.startsWith(USER_ID_PREFIX)) {
-					permsets[i] = getEffectiveUserPermset(id);
+					permsets[i] = getEffectiveUserPermset(id, compareType);
 				}
 				// TODO add another else to prevent invalid spoofs of url - ensure prefix valid
 				else {
-					permsets[i] = getPermissionSet(id, retry);
+					permsets[i] = getPermissionSet(id, compareType, retry);
 				}
 			}
 		}
@@ -157,45 +150,64 @@ public class BaseCompare {
 	}
 	
 	/**
+	 * Get permission set with effective user perms with userId
+	 * 
+	 * @param userId
+	 * @return PermissionSet
+	 */
+	private static PermissionSet getEffectiveUserPermset(String userId, String compareType) {
+		ImmutableSet.Builder<PermissionSet> permsetSetBuilder = new ImmutableSet.Builder<PermissionSet>();
+		boolean retry = true;
+
+		if (OBJECT_PERMS.equals(compareType)) {
+			// object perms query retrieves objPerms directly for user, no need to aggregate
+			return getPermissionSet(userId, compareType, retry);
+			
+		} else {
+			ImmutableSet<String> permsetIds = getUserPermsetIds(userId, retry);
+			Iterator ittr = permsetIds.iterator();
+			while (ittr.hasNext()) {
+				permsetSetBuilder.add(getPermissionSet(ittr.next().toString(), compareType, retry));
+			}
+			return aggregatePermissionSets(permsetSetBuilder.build(), compareType);
+		}
+	}
+
+	/**
 	 * Creates aggregate permset representing effective perms of a user
 	 * @param ImmutableSet<PermissionSet> permsets
 	 * @return PermissionSet 
 	 */
-	public static PermissionSet aggregatePermissionSets(ImmutableSet<PermissionSet> permsets) {
+	public static PermissionSet aggregatePermissionSets(ImmutableSet<PermissionSet> permsets, String compareType) {
 		PermissionSet permset = new PermissionSet("aggregatePermset_FakeId");
 		Set<String> aggregateUserPerms = new HashSet<String>();
 
 		Iterator permIter = permsets.iterator();
 		while (permIter.hasNext()) {
 			PermissionSet tempPermset = (PermissionSet) permIter.next();
-			aggregateUserPerms.addAll(tempPermset.getUserPerms());
-			for (SetupEntityTypes type : SetupEntityTypes.values()) {
-				permset.getSeaPermMap(ObjPermCategory.original)
-						.get(type)
-						.addAll(tempPermset.getSeaPermMap(
-								ObjPermCategory.original).get(type));
+
+			if (USER_PERMS.equals(compareType)) {
+				aggregateUserPerms.addAll(tempPermset.getUserPerms());
+				
+			} else if (SETUP_ENTITY_PERMS.equals(compareType)) {
+				for (SetupEntityTypes type : SetupEntityTypes.values()) {
+					permset.getSeaPermMap(ObjPermCategory.original)
+							.get(type)
+							.addAll(tempPermset.getSeaPermMap(
+									ObjPermCategory.original).get(type));
+				}
+				
+			} else if (OBJECT_PERMS.equals(compareType)) {
+				// Don't do anything here since object perms does not require aggregate -- query gets all perms
 			}
 		}
-		permset.setUserPerms(aggregateUserPerms);
+		
+		// set user perm values once aggregated -- SEA aggregated during iterations
+		if (USER_PERMS.equals(compareType)) {
+			permset.setUserPerms(aggregateUserPerms);
+		}
 
 		return permset;
-	}
-	
-	/**
-	 * Get permission set with effective user perms with userId
-	 * @param userId
-	 * @return PermissionSet
-	 */
-	private static PermissionSet getEffectiveUserPermset(String userId) {
-		ImmutableSet.Builder<PermissionSet> permsetSetBuilder = new ImmutableSet.Builder<PermissionSet>();
-		boolean retry = true;
-		
-		ImmutableSet<String> permsetIds = getUserPermsetIds(userId, retry);
-		Iterator ittr = permsetIds.iterator();
-		while (ittr.hasNext())
-			permsetSetBuilder.add(getPermissionSet(ittr.next().toString(), retry));
-		
-		return aggregatePermissionSets(permsetSetBuilder.build());
 	}
 
 	/**
