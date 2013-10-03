@@ -1,6 +1,7 @@
 package controllers;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import javax.mail.Session;
 
@@ -89,7 +90,7 @@ public class RetrieveData extends Controller {
 		if (itemType.equals("User")) 
 			queryBuilder.append("Name FROM User ORDER BY Name ");
 		else if (itemType.equals("PermissionSet")) 
-			queryBuilder.append("Name FROM PermissionSet WHERE IsOwnedByProfile=false ORDER BY Name ");
+			queryBuilder.append("Label FROM PermissionSet WHERE IsOwnedByProfile=false ORDER BY Name ");
 		else if (itemType.equals("ProfilePermissionSet")) 
 			queryBuilder.append("Profile.Name FROM PermissionSet WHERE IsOwnedByProfile=true ORDER BY Profile.Name ");
 		
@@ -100,7 +101,10 @@ public class RetrieveData extends Controller {
 	
 
 	/**
-	 * Calls the Describe method on PermissionSet via the Rest API to get the Permission Fields
+	 * Calls the Describe method on PermissionSet via the Rest API to get the Permission Fields.
+	 * Uses caching and will use cached result, if possible.
+	 * 
+	 * @param retry
 	 */
 	public static JsonObject getUserPerms(boolean retry) {
 		OAuthSession oauth = ForceDotComOAuth2.getOAuthSession();
@@ -108,7 +112,8 @@ public class RetrieveData extends Controller {
 			Application.index();
 		}
 		
-		String userPerms = Cache.get(session.getId() + "-userperms", String.class);
+		String cacheKey = session.getId() + "-userperms";
+		String userPerms = Cache.get(cacheKey, String.class);
 		if (userPerms != null) {
 			// cache hit
 			return new JsonParser().parse(userPerms).getAsJsonObject();
@@ -122,7 +127,7 @@ public class RetrieveData extends Controller {
 			int res = response.getStatus();
 			if (res == 200) {
 				JsonElement jsonResult = response.getJson();
-				Cache.set(session.getId() + "-userperms", jsonResult.toString(), "5mn");
+				Cache.set(cacheKey, jsonResult.toString(), "6mn");
 				return jsonResult.getAsJsonObject();
 				
 			} else if (res == 401) {
@@ -142,4 +147,43 @@ public class RetrieveData extends Controller {
 		}
 		return null;	// shouln't get get here, but need default return
 	}
+	
+	/**
+	 * Build SOQL query string for all user permissions
+	 * @param permsetId
+	 * @param userPerms Set<String> 
+	 */
+	protected static String userPermQueryBuilder(String permsetId, Set<String> userPerms) {
+		StringBuilder queryBuild = new StringBuilder();
+		queryBuild.append("SELECT ");
+
+		BaseCompare.appendParamsToQuery(queryBuild, BaseCompare.USER_PERMS, userPerms);
+		queryBuild.append(" FROM PermissionSet WHERE Id=\'").append(permsetId).append("\'");
+
+		return queryBuild.toString();
+	}
+	
+	/**
+	 * Return JsonObject result of user perms for a specific permset.
+	 * Uses caching to prevent more queries than required.
+	 * 
+	 * @param permsetId
+	 * @param userPerms Set<String> 
+	 * @param retry
+	 */
+	public static JsonObject getPermsetUserPerms(String permsetId, Set<String> userPerms, boolean retry) {
+		String cacheKey = session.getId() + "-userperms-" + permsetId;
+		
+		String userPermCacheString = Cache.get(cacheKey, String.class);
+		if (userPermCacheString != null) {
+			// cache hit
+			return new JsonParser().parse(userPermCacheString).getAsJsonObject();
+		} else {
+			// cache miss
+			JsonObject userPermJsonObject = query(userPermQueryBuilder(permsetId, userPerms), retry);
+			Cache.set(cacheKey, userPermJsonObject.toString(), "3mn");
+			return userPermJsonObject;
+		}
+	}
+	
 }

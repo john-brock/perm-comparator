@@ -70,7 +70,7 @@ public class CompareObjectPerms extends BaseCompare {
 			String parentId, boolean retry) {
 		String query = buildObjPermQuery(parentId);
 		Map<String, EnumSet<PermissionSet.objectPermissions>> objPermMap = Maps.newHashMap();
-		Logger.info("QUERY: " + query);
+//		Logger.info("QUERY: " + query);
 		JsonObject objPermResults = RetrieveData.query(query, retry);
 		JsonArray objPermRows = null;
 		if (objPermResults != null) {
@@ -96,7 +96,7 @@ public class CompareObjectPerms extends BaseCompare {
 			}
 			objPermMap.put(objName, objPerms);
 		}
-		Logger.info("OBJ_PERM_MAP: %s", objPermMap);
+//		Logger.info("OBJ_PERM_MAP: %s", objPermMap);
 		return objPermMap;
 	}
 	

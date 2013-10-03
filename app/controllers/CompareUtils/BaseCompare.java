@@ -43,16 +43,16 @@ public class BaseCompare {
 	protected static final String PROFILE_ID_PREFIX = "00e";
 	protected static final String PERMSET_ID_PREFIX = "0PS";
 	
-	protected static final String USER_PERMS = "UserPerms";
-	protected static final String OBJECT_PERMS = "ObjectPerms";
-	protected static final String SETUP_ENTITY_PERMS = "SetupEntityPerms";
+	public static final String USER_PERMS = "UserPerms";
+	public static final String OBJECT_PERMS = "ObjectPerms";
+	public static final String SETUP_ENTITY_PERMS = "SetupEntityPerms";
 
 	/**
 	 * Append permissions to query from PermissionSet
 	 * @param queryBuild - StringBuilder
 	 * @param permCategory - User or Object permissions
 	 */
-	protected static void appendParamsToQuery(StringBuilder queryBuild, String permCategory, Set<String> userPerms) {
+	public static void appendParamsToQuery(StringBuilder queryBuild, String permCategory, Set<String> userPerms) {
 		String[] perms = new String[]{};
 		if (permCategory.equals(USER_PERMS)) {
 			if (userPerms != null) {
@@ -240,7 +240,7 @@ public class BaseCompare {
 			}
 		}
 		jsonBuild.append(" }");
-		Logger.info("JSON RESULT: " + jsonBuild.toString());
+		//Logger.info("JSON RESULT: " + jsonBuild.toString());
 		return jsonBuild.toString();
 	}
 

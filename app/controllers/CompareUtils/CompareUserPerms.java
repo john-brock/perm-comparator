@@ -54,31 +54,16 @@ public class CompareUserPerms extends BaseCompare {
 	}
 	
 	/**
-	 * Build SOQL query string for all permissions
-	 * @param permsetId
-	 */
-	protected static String userPermQueryBuilder(String permsetId, Set<String> userPerms) {
-		StringBuilder queryBuild = new StringBuilder();
-		queryBuild.append("SELECT ");
-
-		appendParamsToQuery(queryBuild, USER_PERMS, userPerms);
-		queryBuild.append(" FROM PermissionSet WHERE Id=\'").append(permsetId).append("\'");
-
-		return queryBuild.toString();
-	}
-	
-	/**
 	 * Add permissions that are set to true for the PermissionSet
 	 * @param permset
 	 * @param permsetInfo
 	 */
 	protected static void addPermsToPermset(PermissionSet permset, boolean retry) {
-		Set<String> userPerms = CompareUserPerms.retrieveValidUserPerms();
+		Set<String> userPerms = retrieveValidUserPerms();
 
-		String query = userPermQueryBuilder(permset.getId(), userPerms);
-		JsonObject permsetInfo = RetrieveData.query(query, retry).get("records").getAsJsonArray().get(0).getAsJsonObject();
+		JsonObject permsetInfo = RetrieveData.getPermsetUserPerms(permset.getId(), userPerms, retry).get("records").getAsJsonArray().get(0).getAsJsonObject();
 		if (permsetInfo == null) {
-			Logger.warn("PermsetInfo is null after query in getPermissionSet. Query: %s", query);
+			Logger.warn("PermsetInfo is null after query in getPermissionSet.");
 		}
 		
 		for (String perm : userPerms) {
