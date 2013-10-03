@@ -21,6 +21,25 @@ Ext.onReady(function() {
             	]
     });
     
+	// Permsets use Labels as name
+	var permsetItemReader = new Ext.data.JsonReader({
+		totalProperty: 'totalSize',
+		successProperty: 'done',
+		root: 'records',
+		fields : [
+			{name: 'Name', type: 'string'},
+			{name: 'Id', type: 'string'}
+		]
+	});	
+	
+    Ext.define('permsetItem', {
+        extend: 'Ext.data.Model',
+        fields: [
+                 {name: 'Name', mapping: 'Label'},
+                 {name: 'Id'}
+            	]
+    });
+	
 	// Profiles different since get profile name, permsetId
 	var profileItemReader = new Ext.data.JsonReader({
 		totalProperty: 'totalSize',
@@ -43,7 +62,7 @@ Ext.onReady(function() {
     var userMenuStore = makeStore("Users", menuItemReader, menuItem);
     userMenuStore.load();
 
-    var permsetMenuStore = makeStore("Permsets", menuItemReader, menuItem);
+    var permsetMenuStore = makeStore("Permsets", permsetItemReader, permsetItem);
     permsetMenuStore.load();
 
     var profilePermsetMenuStore = makeStore("ProfilePermsets", profileItemReader, profileItem);
@@ -445,7 +464,7 @@ function makeMenuView(itemStore) {
 		tpl: '<tpl for=".">' +
             	'<div class="item-source"><table><tbody>' +
                 	'<tr><td class="item-label">Name</td><td class="item-name">{Name}</td></tr>' +
-                	'<tr><td class="item-label">Id</td><td class="item-name">{Id}</td></tr>' +
+                	/*'<tr><td class="item-label">Id</td><td class="item-name">{Id}</td></tr>' +*/
                 '</tbody></table></div>' +
             '</tpl>',
          itemSelector: 'div.item-source',
