@@ -1,5 +1,5 @@
 # Application dependencies
 
 require:
-    - play 1.2.4
+    - play 1.2.6
     - com.google.guava -> guava r07
