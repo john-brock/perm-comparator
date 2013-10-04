@@ -121,7 +121,7 @@ public class CompareUserPerms extends BaseCompare {
 	 */
 	public static void addUserPermResultsToJson(PermissionSet permset,
 			StringBuilder jsonBuild, String permCategory, int i) {
-		jsonBuild.append(", permset").append(i+1);
+		jsonBuild.append(", \"permset").append(i+1);
 		
 		Iterator itter = null;
 		jsonBuild.append(USER);
@@ -140,7 +140,7 @@ public class CompareUserPerms extends BaseCompare {
 			jsonBuild.append(DIFFERENCES);
 		}
 		
-		jsonBuild.append(": [");
+		jsonBuild.append("\": [");
 
 		Set<String> sortedPerms = new TreeSet<String>(userPerms);
 		itter = sortedPerms.iterator();
@@ -148,7 +148,7 @@ public class CompareUserPerms extends BaseCompare {
 		int endOfPermissionsIndex = 11;
 		// add each perm to the json result
 		while (itter.hasNext()) {
-			jsonBuild.append("{\'name': \'");
+			jsonBuild.append("{\"name\": \"");
 			
 			// 'Permissions' is 11 chars - remove from front and split on Uppercase, not first
 			String[] permLableSubstrings = itter.next().toString()
@@ -158,7 +158,7 @@ public class CompareUserPerms extends BaseCompare {
 			for (String substring : permLableSubstrings) {
 				jsonBuild.append(substring).append(" ");	// splits strings to array, add back
 			}
-			jsonBuild.append("\', 'enabled': true }");		// currently not used, but just for demo
+			jsonBuild.append("\", \"enabled\": true }");	// currently not used, but just for demo
 			if (itter.hasNext()) jsonBuild.append(", ");	// if next, comma, otherwise, no comma
 		}
 		jsonBuild.append("]");
