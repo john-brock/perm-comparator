@@ -12,3 +12,5 @@ conf/host.cert
 conf/host.key
 conf/application.conf
 test-result/
+.classpath
+.settings/org.eclipse.core.resources.prefs
