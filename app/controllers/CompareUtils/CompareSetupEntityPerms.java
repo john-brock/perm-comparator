@@ -33,52 +33,32 @@ import models.PermissionSet.objectPermissions;
 
 public class CompareSetupEntityPerms extends BaseCompare {
 
-	/**
-	 * Returns SetupEntityAccess perm SOQL query string
-	 * @param parentId - UserId or PermissionSet / ProfileId
-	 */
-	private static String buildSeaPermQuery(String parentId) {
-		StringBuilder query = new StringBuilder("SELECT SetupEntityId FROM SetupEntityAccess WHERE ParentId");
-		if (parentId.startsWith(PERMSET_ID_PREFIX)) {
-			query.append("='").append(parentId).append("'");
-		} else {
-			query.append(" IN (SELECT PermissionSetId from PermissionSetAssignment WHERE ");
-			if (parentId.startsWith(USER_ID_PREFIX)) {
-				query.append("AssigneeId='");
-			} else if (parentId.startsWith(PROFILE_ID_PREFIX)) {
-				query.append("ProfileId='");
-			} else {
-				Logger.warn("Invalid parentId prefix.  ParentId: %s", parentId);
-			}
-			// TODO throw exception - don't allow invalid query string
-			query.append(parentId).append("')");
-		}
-//		query.append(" ORDER BY SobjectType ASC NULLS FIRST");
-		return query.toString();
-	}
-	
 	public static String compareSetupEntityPerms(boolean retry, String... ids) {
 		PermissionSet[] permsets = getPermsetArray(retry, SETUP_ENTITY_PERMS, ids);
 		classifySetupEntityPerms(permsets);
 
 		return generatePermsJson(permsets, SETUP_ENTITY_PERMS);
 	}
-
+	
+	/**
+	 * Get the SetupEntityAccess ids and corosponding SetupEntity names then add to permset
+	 * 
+	 * @param permset
+	 * @param retry
+	 */
 	protected static void addPermsToPermset(PermissionSet permset, boolean retry) {
-		String seaQuery = buildSeaPermQuery(permset.getId());
-		Logger.info("Add SEA Query: %s", seaQuery);
-		JsonArray seaInfo = RetrieveData.query(seaQuery, retry).get("records").getAsJsonArray();
+		List<JsonObject> seaInfo = RetrieveData.getSetupAccessIds(permset.getId(), retry);
 		if (seaInfo == null) {
-			Logger.warn("PermsetInfo is null after query in getPermissionSet. Query: %s", seaQuery);
+			Logger.warn("PermsetInfo is null after trying to get SetupEntityAccess Ids.");
 		}
-		// Logger.warn("JSON ARRAY (SEA INFO) %s", seaInfo.toString());
+
 		// add all setupEntityIds to list to retrieve entity names
 		Map<String, ArrayList<String>> typeToEntityMap = Maps.newHashMap();
 		for (SetupEntityTypes type : SetupEntityTypes.values()) {
 			typeToEntityMap.put(type.getPrefix(), Lists.<String>newArrayList());
 		}
-		for (JsonElement sea : seaInfo) {
-			String id = sea.getAsJsonObject().get("SetupEntityId").getAsString();
+		for (JsonObject sea : seaInfo) {
+			String id = sea.get("SetupEntityId").getAsString();
 			// add the entity id to the list corresponding to the entity type
 			String prefix = id.substring(0, 3);
 			ArrayList<String> newIdList = typeToEntityMap.get(prefix);
@@ -87,41 +67,23 @@ public class CompareSetupEntityPerms extends BaseCompare {
 				typeToEntityMap.put(prefix, newIdList);
 			}
 		}
-		//Logger.warn("ENTITY MAP: %s", typeToEntityMap.toString());
+
 		for (SetupEntityTypes type : SetupEntityTypes.values()) {
 			boolean isAppType = (type.equals(SetupEntityTypes.CONN_APP) || type
 					.equals(SetupEntityTypes.TABSET));
-			String labelQuery = String.format(
-					"SELECT %s FROM %s WHERE Id IN (%s)", isAppType ? "Label"
-							: "Name", type.getFieldName(),
-					buildIdListString(typeToEntityMap.get(type.getPrefix())));
-			//Logger.warn("Query: %s", labelQuery);
-			JsonArray results = RetrieveData.query(labelQuery, retry).get("records").getAsJsonArray();
+			ArrayList<String> idList = typeToEntityMap.get(type.getPrefix());
+			final String apiName = type.getApiName();
+			List<JsonObject> results = RetrieveData.getSetupEntityNames(isAppType, apiName, idList,
+					retry);
 			if (results == null) {
-				Logger.warn("Type: %s skipped", type.getFieldName());
+				Logger.warn("Type: %s skipped", apiName);
 				continue;
 			}
-			for (JsonElement result : results) {
+			for (JsonObject result : results) {
 				permset.getSeaPermMap(ObjPermCategory.original)
-						.get(type)
-						.add(result.getAsJsonObject()
-								.get(isAppType ? "Label" : "Name")
-								.getAsString());
+						.get(type).add(result.get(isAppType ? "Label" : "Name").getAsString());
 			}
 		}
-	}
-	
-	private static String buildIdListString(ArrayList<String> idList) {
-		StringBuilder builder = new StringBuilder();
-		if (idList.isEmpty()) {
-			return "\'\'";
-		}
-		Iterator itter = idList.iterator();
-		while (itter.hasNext()) {
-			builder.append("\'" + itter.next() + "\'");
-			if (itter.hasNext()) { builder.append(","); }
-		}
-		return builder.toString();
 	}
 	
 	/**
@@ -224,8 +186,7 @@ public class CompareSetupEntityPerms extends BaseCompare {
 		Map<SetupEntityTypes, Set<String>> seaPermMap = new HashMap();
 
 		StringBuilder permsetRoot = new StringBuilder();
-		permsetRoot.append("permset").append(i+1).append(SETUP_ENTITY_PERMS);
-		//permsetRoot.append("permset").append(i+1).append(OBJECT);
+		permsetRoot.append("permset").append(i+1).append(SEA);
 		if (permCategory.equals(UNIQUE)) {
 			seaPermMap = permset.getSeaPermMap(ObjPermCategory.unique);
 			permsetRoot.append(UNIQUE);
@@ -243,24 +204,22 @@ public class CompareSetupEntityPerms extends BaseCompare {
 		jsonBuild.append(", ").append("\"" + permsetLabel + "\"").append(": [");
 		
 		SortedSet<SetupEntityTypes> alphabeticalKeySet = new TreeSet<SetupEntityTypes>();
-		for (SetupEntityTypes type : seaPermMap.keySet()) {
-			alphabeticalKeySet.add(type);
-		}
+		alphabeticalKeySet.addAll(seaPermMap.keySet());
 		
-		// TODO -- need to loop through each of the sets associated with each SEAType and add all names
-		// to the json for that particular SEAType.
 		seaItter = alphabeticalKeySet.iterator();
 		if (seaItter.hasNext()) {jsonBuild.append("{ \"success\": \"true\", \"text\": \"Setup Entities\", \"").append(permsetLabel).append("\": [ "); }
 		while (seaItter.hasNext()) {
 			seaName = (SetupEntityTypes) seaItter.next();
 			jsonBuild.append("{\"success\": \"true\", \"text\": \"").append(seaName.getDisplayName()).append("\", \"").append(permsetLabel).append("\": [");
 
+			SortedSet<String> alphabeticalEntitySet = new TreeSet<String>();
 			if (seaPermMap.containsKey(seaName)) {
-				entityItter = seaPermMap.get(seaName).iterator();
+				alphabeticalEntitySet.addAll(seaPermMap.get(seaName));
 			} else {
 				continue;
 			}
 			
+			entityItter = alphabeticalEntitySet.iterator();
 			while (entityItter.hasNext()) {
 				jsonBuild.append("{\"success\": \"true\", \"text\": \"");
 				jsonBuild.append(entityItter.next().toString());

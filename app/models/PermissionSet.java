@@ -54,7 +54,7 @@ public class PermissionSet {
 		public String getPrefix() {
 			return this.prefix;
 		}
-		public String getFieldName() {
+		public String getApiName() {
 			return this.apiFieldName;
 		}
 		public String getDisplayName() {
