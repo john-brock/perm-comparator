@@ -164,8 +164,26 @@ Ext.onReady(function() {
     var objPermDifferencesStore2 = makeTreeStore('permset2_Object_Differences', 'objPerms2Diff');
     var objPermDifferencesStore3 = makeTreeStore('permset3_Object_Differences', 'objPerms3Diff');
     var objPermDifferencesStore4 = makeTreeStore('permset4_Object_Differences', 'objPerms4Diff');
+    
+    // create stores to hold SEA perms
+    var seaPermStore1 = makeTreeStore('permset1_Sea_Unique', 'seaPerms1Unique');
+    var seaPermStore2 = makeTreeStore('permset2_Sea_Unique', 'seaPerms2Unique');
+    var seaPermStore3 = makeTreeStore('permset3_Sea_Unique', 'seaPerms3Unique');
+    var seaPermStore4 = makeTreeStore('permset4_Sea_Unique', 'seaPerms4Unique');
 
-    // main store that will load data to specific user perm stores from 1 main json
+    var seaPermCommonStore1 = makeTreeStore('permset1_Sea_Common', 'seaPerms1Common');
+    var seaPermCommonStore2 = makeTreeStore('permset2_Sea_Common', 'seaPerms2Common');
+    var seaPermCommonStore3 = makeTreeStore('permset3_Sea_Common', 'seaPerms3Common');
+    var seaPermCommonStore4 = makeTreeStore('permset4_Sea_Common', 'seaPerms4Common');
+
+    var seaPermDifferencesStore1 = makeTreeStore('permset1_Sea_Differences', 'seaPerms1Diff');
+    var seaPermDifferencesStore2 = makeTreeStore('permset2_Sea_Differences', 'seaPerms2Diff');
+    var seaPermDifferencesStore3 = makeTreeStore('permset3_Sea_Differences', 'seaPerms3Diff');
+    var seaPermDifferencesStore4 = makeTreeStore('permset4_Sea_Differences', 'seaPerms4Diff');
+
+	/**
+	 * Main UserPerm store that will load data to specific user perm stores from 1 main json
+	 */
     userPermStore = new Ext.data.Store({
     	storeId: 'userPermStoreId',
     	proxy: {
@@ -200,17 +218,14 @@ Ext.onReady(function() {
     // load store Id so URL can be changed when items dropped for comparison
     userPermStoreId = Ext.StoreMgr.lookup("userPermStoreId");
 
-  // main store that will load data to specific object perm stores from 1 main json
+    /**
+     * Main ObjectPerm store that will load data to specific object perm stores from 1 main json
+     */
     objPermStore = new Ext.data.Store({
     	storeId: 'objectPermStoreId',
     	proxy: {
     		type: 'ajax',
     		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms'
-//	        No reader since getting "raw" jsonData to load to appropriate individual stores
-//    		reader: {		
-//	    		type: 'json',
-//	    		fields: [{name: 'success', type: 'boolean'}, {name: 'text', type:'string'}, {name: 'children', type:'auto'}, {name: 'leaf', type: 'boolean'}, {name: 'expanded', type: 'boolean'}, {name: 'loaded', type:'boolean'}]
-//	        }
     	},
 		fields: [{name: 'success'}, {name: 'text'}, {name: 'children'}, {name: 'leaf'}, {name: 'expanded'}, {name: 'loaded'}],
     	listeners: {
@@ -242,6 +257,51 @@ Ext.onReady(function() {
     			objPermDifferencesStore3.load();
     			objPermDifferencesStore4.proxy.data = store.proxy.reader.jsonData;
     			objPermDifferencesStore4.load();
+    		}
+    	}
+    });
+    
+    objectPermStoreId = Ext.StoreMgr.lookup("objectPermStoreId");
+    
+    /**
+     * Main SetupEntityAccess store that will load data to specific SEA perm stores from 1 main json
+     */ 
+    seaPermStore = new Ext.data.Store({
+    	storeId: 'seaPermStoreId',
+    	proxy: {
+    		type: 'ajax',
+    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getSetupEntityPerms'
+    	},
+		fields: [{name: 'success'}, {name: 'text'}, {name: 'children'}, {name: 'leaf'}, {name: 'expanded'}, {name: 'loaded'}],
+    	listeners: {
+    		load: function(store, records, successful) {
+    			// load object perm stores
+    			seaPermCommonStore1.proxy.data = store.proxy.reader.jsonData;
+    			seaPermCommonStore1.load();
+    			seaPermCommonStore2.proxy.data = store.proxy.reader.jsonData;
+    			seaPermCommonStore2.load();
+    			seaPermCommonStore3.proxy.data = store.proxy.reader.jsonData;
+    			seaPermCommonStore3.load();
+    			seaPermCommonStore4.proxy.data = store.proxy.reader.jsonData;
+    			seaPermCommonStore4.load();
+    			
+    			seaPermStore1.proxy.data = store.proxy.reader.jsonData;
+    			seaPermStore1.load();
+    			seaPermStore2.proxy.data = store.proxy.reader.jsonData;
+    			seaPermStore2.load();
+    			seaPermStore3.proxy.data = store.proxy.reader.jsonData;
+    			seaPermStore3.load();
+    			seaPermStore4.proxy.data = store.proxy.reader.jsonData;
+    			seaPermStore4.load();
+
+    			seaPermDifferencesStore1.proxy.data = store.proxy.reader.jsonData;
+    			seaPermDifferencesStore1.load();
+    			seaPermDifferencesStore2.proxy.data = store.proxy.reader.jsonData;
+    			seaPermDifferencesStore2.load();
+    			seaPermDifferencesStore3.proxy.data = store.proxy.reader.jsonData;
+    			seaPermDifferencesStore3.load();
+    			seaPermDifferencesStore4.proxy.data = store.proxy.reader.jsonData;
+    			seaPermDifferencesStore4.load();
     			
                 comparePanel = Ext.getCmp('comparePanelId'); 	// get the actual panel object
                 comparePanel.setLoading(false);					// remove loading mask once data is loaded
@@ -249,7 +309,7 @@ Ext.onReady(function() {
     	}
     });
     
-    objectPermStoreId = Ext.StoreMgr.lookup("objectPermStoreId");
+    seaPermStoreId = Ext.StoreMgr.lookup("seaPermStoreId");
     
     // views for displaying user perms
     var uPermView1 = makePermView(uPermStore1);
@@ -283,6 +343,22 @@ Ext.onReady(function() {
     var objPermDifferencesView3 = makeTreeView(objPermDifferencesStore3);
     var objPermDifferencesView4 = makeTreeView(objPermDifferencesStore4);
     
+    // views for displaying sea perms
+    var seaPermView1 = makeTreeView(seaPermStore1);
+    var seaPermView2 = makeTreeView(seaPermStore2);
+    var seaPermView3 = makeTreeView(seaPermStore3);
+    var seaPermView4 = makeTreeView(seaPermStore4);
+ 
+    var seaPermCommonView1 = makeTreeView(seaPermCommonStore1);
+    var seaPermCommonView2 = makeTreeView(seaPermCommonStore2);
+    var seaPermCommonView3 = makeTreeView(seaPermCommonStore3);
+    var seaPermCommonView4 = makeTreeView(seaPermCommonStore4);
+    
+    var seaPermDifferencesView1 = makeTreeView(seaPermDifferencesStore1);
+    var seaPermDifferencesView2 = makeTreeView(seaPermDifferencesStore2);
+    var seaPermDifferencesView3 = makeTreeView(seaPermDifferencesStore3);
+    var seaPermDifferencesView4 = makeTreeView(seaPermDifferencesStore4);
+    
     // -- Make compare panels --
     // column panels to hold perms for each of the comparison categories
     var userPermUniques = makeColumnPanel('User Permissions', uPermView1, uPermView2, uPermView3, uPermView4);
@@ -293,11 +369,16 @@ Ext.onReady(function() {
     var objPermUniques = makeColumnPanel('Object Permissions', objPermView1, objPermView2, objPermView3, objPermView4);
     var objPermSims = makeColumnPanel('Object Permissions', objPermCommonView1, objPermCommonView2, objPermCommonView3, objPermCommonView4);
     var objPermDiffs = makeColumnPanel('Object Permissions', objPermDifferencesView1, objPermDifferencesView2, objPermDifferencesView3, objPermDifferencesView4);
+
+    // column panels to hold SetupEntity perms for each comparison categories
+    var seaPermUniques = makeColumnPanel('Setup Entity Permissions', seaPermView1, seaPermView2, seaPermView3, seaPermView4);
+    var seaPermSims = makeColumnPanel('Setup Entity Permissions', seaPermCommonView1, seaPermCommonView2, seaPermCommonView3, seaPermCommonView4);
+    var seaPermDiffs = makeColumnPanel('Setup Entity Permissions', seaPermDifferencesView1, seaPermDifferencesView2, seaPermDifferencesView3, seaPermDifferencesView4);
     
     // panels specific to unique, common, differing
-    var permsetUniques = makeComparisonPanel('Unique Perms', [userPermUniques, objPermUniques]);
-    var permsetSimilarities = makeComparisonPanel('Common Perms', [userPermSims, objPermSims]);
-    var permsetDifferences = makeComparisonPanel('Differing Perms', [userPermDiffs, objPermDiffs]);
+    var permsetUniques = makeComparisonPanel('Unique Perms', [userPermUniques, objPermUniques, seaPermUniques]);
+    var permsetSimilarities = makeComparisonPanel('Common Perms', [userPermSims, objPermSims, seaPermSims]);
+    var permsetDifferences = makeComparisonPanel('Differing Perms', [userPermDiffs, objPermDiffs, seaPermDiffs]);
     
     // main compare panel for body of page
     var comparePanel = makeComparisonPanelWithId('', [permsetSimilarities, permsetUniques, permsetDifferences], 'comparePanelId');
@@ -605,10 +686,15 @@ function clearAssignmentsFunction() {
 	
     comparePanel = Ext.getCmp('comparePanelId'); // get the actual panel object
     comparePanel.setLoading(true, true);
+    
 	userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getUserPerms';
 	userPermStoreId.load();
+	
 	objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms';
 	objectPermStoreId.load();
+	
+	seaPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getSetupEntityPerms';
+	seaPermStoreId.load();
 }
 
 function clearRowBody(target) {
@@ -756,6 +842,9 @@ function initializeDestinationDropZone(v) {
 
             objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms';
             objectPermStoreId.load();
+            
+            seaPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getSetupEntityPerms';
+            seaPermStoreId.load();
             
             return true;
         }

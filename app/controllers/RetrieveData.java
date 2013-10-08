@@ -1,6 +1,8 @@
 package controllers;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.mail.Session;
@@ -15,6 +17,7 @@ import play.libs.WS.HttpResponse;
 import play.libs.WS.WSRequest;
 import play.mvc.Controller;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -184,6 +187,143 @@ public class RetrieveData extends Controller {
 			Cache.set(cacheKey, userPermJsonObject.toString(), "3mn");
 			return userPermJsonObject;
 		}
+	}
+	
+	/**
+	 * Get the SetupEntityAccess Ids for a particular permset.
+	 * Uses caching.
+	 * 
+	 * @param permsetId
+	 * @param retry
+	 * @return
+	 */
+	public static List<JsonObject> getSetupAccessIds(String permsetId, boolean retry) {
+		List<JsonObject> results = Lists.newArrayList();
+		JsonArray resultsArray = new JsonArray();
+		
+		String cacheKey = session.getId() + "-setupaccess-" + permsetId;
+		String setupAccessString = Cache.get(cacheKey, String.class);
+		if (setupAccessString != null) {
+			// cache hit
+			Logger.info("SETUP ACCESS: %s", setupAccessString);
+			resultsArray = new JsonParser().parse(setupAccessString).getAsJsonArray();
+		} else {
+			// cache miss
+			String seaQuery = buildSeaPermQuery(permsetId);
+			resultsArray = RetrieveData.query(seaQuery, retry).get("records").getAsJsonArray();			
+			Cache.set(cacheKey, resultsArray.toString(), "3mn");
+		}
+		
+		for (JsonElement jsElement : resultsArray) {
+			results.add(jsElement.getAsJsonObject());
+		}
+		return results;
+	}
+	
+	/**
+	 * Returns SetupEntityAccess perm SOQL query string
+	 * @param parentId - UserId or PermissionSet / ProfileId
+	 */
+	private static String buildSeaPermQuery(String parentId) {
+		StringBuilder query = new StringBuilder("SELECT SetupEntityId FROM SetupEntityAccess WHERE ParentId");
+		if (parentId.startsWith(BaseCompare.PERMSET_ID_PREFIX)) {
+			query.append("='").append(parentId).append("'");
+		} else {
+			query.append(" IN (SELECT PermissionSetId from PermissionSetAssignment WHERE ");
+			if (parentId.startsWith(BaseCompare.USER_ID_PREFIX)) {
+				query.append("AssigneeId='");
+			} else if (parentId.startsWith(BaseCompare.PROFILE_ID_PREFIX)) {
+				query.append("ProfileId='");
+			} else {
+				Logger.warn("Invalid parentId prefix.  ParentId: %s", parentId);
+			}
+			// TODO throw exception - don't allow invalid query string
+			query.append(parentId).append("')");
+		}
+		return query.toString();
+	}
+	
+	/**
+	 * Retrieve SetupEntity names / labels.
+	 * Uses caching if possible.
+	 * 
+	 * @param isAppType - Tabset or Connected App
+	 * @param apiName
+	 * @param idList
+	 * @param retry
+	 * @return JsonArray results
+	 */
+	public static List<JsonObject> getSetupEntityNames(boolean isAppType,
+			String apiName, ArrayList<String> idList, boolean retry) {
+		List<JsonObject> results = Lists.newArrayList();
+		List<String> uncachedIds = Lists.newArrayList();
+		
+		String cacheKeyPrefix = session.getId() + "-setupentity-";
+		// find all cached SEA names and add to results list and determine uncached ids
+		for (String id : idList) {
+			String cacheKey = cacheKeyPrefix + id;
+
+			String setupEntityNameJson = Cache.get(cacheKey, String.class);
+			if (setupEntityNameJson != null) {
+				// cache hit - add result to results list
+				results.add(new JsonParser().parse(setupEntityNameJson).getAsJsonObject());
+			} else {
+				// cache miss on setup entity name
+				uncachedIds.add(id);
+			}
+		}
+
+		// query to get names for uncached ids
+		if (!uncachedIds.isEmpty()) {
+			String labelQuery = String.format(
+					"SELECT Id, %s FROM %s WHERE Id IN (%s)", isAppType ? "Label"
+							: "Name", apiName, buildIdListString(uncachedIds));
+			
+			JsonArray uncachedResults = RetrieveData.query(labelQuery, retry)
+					.get("records").getAsJsonArray();
+			
+			// for each entity returned, cache result and add to results list
+			for (JsonElement jsonElement : uncachedResults) {
+				JsonObject jsonObj = jsonElement.getAsJsonObject();
+				Cache.set(cacheKeyPrefix + jsonObj.get("Id").getAsString(), jsonObj.toString(), "3mn");
+				results.add(jsonObj);
+			}
+		}
+		
+		// results is combination of cached and uncached SetupEntityName JsonObjects
+		return results;
+	}
+	
+	/**
+	 * Take List<String> and join with single quotes for use in SOQL query
+	 * 
+	 * @param idList
+	 * @return idList String
+	 */
+	private static String buildIdListString(List<String> idList) {
+		StringBuilder builder = new StringBuilder();
+		if (idList.isEmpty()) {
+			return "\'\'";
+		}
+		Iterator itter = idList.iterator();
+		while (itter.hasNext()) {
+			builder.append("\'" + itter.next() + "\'");
+			if (itter.hasNext()) { builder.append(","); }
+		}
+		return builder.toString();
+	}
+	
+	private static void printMemoryUsage() {
+        int mb = 1024*1024;
+        
+        Runtime runtime = Runtime.getRuntime();
+        final long freeMemory = runtime.freeMemory();
+        final long totalMemory = runtime.totalMemory();
+		
+        Logger.info("Used Memory:" + (totalMemory - freeMemory) / mb);
+		Logger.info("Free Memory:" + freeMemory / mb);
+        Logger.info("Total Memory:" + totalMemory / mb);
+		Logger.info("Max Memory:" + runtime.maxMemory() / mb);
 	}
 	
 }

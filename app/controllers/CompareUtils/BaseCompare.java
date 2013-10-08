@@ -34,14 +34,15 @@ public class BaseCompare {
 	
 	protected static final String USER = "_User";
 	protected static final String OBJECT = "_Object";
+	protected static final String SEA = "_Sea";
 
 	protected static final String UNIQUE = "_Unique";
 	protected static final String COMMON = "_Common";
 	protected static final String DIFFERENCES = "_Differences";
 	
-	protected static final String USER_ID_PREFIX = "005";
-	protected static final String PROFILE_ID_PREFIX = "00e";
-	protected static final String PERMSET_ID_PREFIX = "0PS";
+	public static final String USER_ID_PREFIX = "005";
+	public static final String PROFILE_ID_PREFIX = "00e";
+	public static final String PERMSET_ID_PREFIX = "0PS";
 	
 	public static final String USER_PERMS = "UserPerms";
 	public static final String OBJECT_PERMS = "ObjectPerms";
