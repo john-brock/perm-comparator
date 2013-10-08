@@ -32,6 +32,8 @@ import com.google.gson.JsonParser;
  */
 public class RetrieveData extends Controller {
 	
+	private static final long MEM_THRESHOLD_MB = 10;
+	
 	/**
 	 * Use Force.com API to retrieve data (authentication with OAuth). Returns JsonObject.
 	 * @param query - SOQL query string
@@ -119,6 +121,7 @@ public class RetrieveData extends Controller {
 		String userPerms = Cache.get(cacheKey, String.class);
 		if (userPerms != null) {
 			// cache hit
+			Cache.replace(cacheKey, userPerms, "6mn");	// keep cache warm
 			return new JsonParser().parse(userPerms).getAsJsonObject();
 		} else {
 			// cache miss
@@ -180,11 +183,14 @@ public class RetrieveData extends Controller {
 		String userPermCacheString = Cache.get(cacheKey, String.class);
 		if (userPermCacheString != null) {
 			// cache hit
+			Cache.replace(cacheKey, userPermCacheString, "3mn");	// keep cache warm
 			return new JsonParser().parse(userPermCacheString).getAsJsonObject();
 		} else {
 			// cache miss
 			JsonObject userPermJsonObject = query(userPermQueryBuilder(permsetId, userPerms), retry);
-			Cache.set(cacheKey, userPermJsonObject.toString(), "3mn");
+			if (!freeMemoryBelowThreshold()) {
+				Cache.set(cacheKey, userPermJsonObject.toString(), "3mn");
+			}
 			return userPermJsonObject;
 		}
 	}
@@ -205,14 +211,17 @@ public class RetrieveData extends Controller {
 		String setupAccessString = Cache.get(cacheKey, String.class);
 		if (setupAccessString != null) {
 			// cache hit
-			Logger.info("SETUP ACCESS: %s", setupAccessString);
+			Cache.replace(cacheKey, setupAccessString, "3mn");	// keep cache warm
 			resultsArray = new JsonParser().parse(setupAccessString).getAsJsonArray();
 		} else {
 			// cache miss
 			String seaQuery = buildSeaPermQuery(permsetId);
 			resultsArray = RetrieveData.query(seaQuery, retry).get("records").getAsJsonArray();			
-			Cache.set(cacheKey, resultsArray.toString(), "3mn");
+			if (!freeMemoryBelowThreshold()) {
+				Cache.set(cacheKey, resultsArray.toString(), "3mn");
+			}
 		}
+		removeCacheElementIfMemoryLow(cacheKey);
 		
 		for (JsonElement jsElement : resultsArray) {
 			results.add(jsElement.getAsJsonObject());
@@ -267,6 +276,7 @@ public class RetrieveData extends Controller {
 			if (setupEntityNameJson != null) {
 				// cache hit - add result to results list
 				results.add(new JsonParser().parse(setupEntityNameJson).getAsJsonObject());
+				Cache.replace(cacheKey, setupEntityNameJson, "3mn");	// keep cache warm
 			} else {
 				// cache miss on setup entity name
 				uncachedIds.add(id);
@@ -285,7 +295,9 @@ public class RetrieveData extends Controller {
 			// for each entity returned, cache result and add to results list
 			for (JsonElement jsonElement : uncachedResults) {
 				JsonObject jsonObj = jsonElement.getAsJsonObject();
-				Cache.set(cacheKeyPrefix + jsonObj.get("Id").getAsString(), jsonObj.toString(), "3mn");
+				if (!freeMemoryBelowThreshold()) {
+					Cache.set(cacheKeyPrefix + jsonObj.get("Id").getAsString(), jsonObj.toString(), "3mn");
+				}
 				results.add(jsonObj);
 			}
 		}
@@ -313,17 +325,24 @@ public class RetrieveData extends Controller {
 		return builder.toString();
 	}
 	
-	private static void printMemoryUsage() {
-        int mb = 1024*1024;
-        
-        Runtime runtime = Runtime.getRuntime();
-        final long freeMemory = runtime.freeMemory();
-        final long totalMemory = runtime.totalMemory();
-		
-        Logger.info("Used Memory:" + (totalMemory - freeMemory) / mb);
-		Logger.info("Free Memory:" + freeMemory / mb);
-        Logger.info("Total Memory:" + totalMemory / mb);
-		Logger.info("Max Memory:" + runtime.maxMemory() / mb);
+	private static void removeCacheElementIfMemoryLow(String cacheKey) {
+        if (freeMemoryBelowThreshold()) {
+        	Logger.error("Free Memory below threshold. Clearning cache element: %s.", cacheKey);
+        	Cache.delete(cacheKey);
+        }
+	}
+	
+	/**
+	 * Check runtime.freeMemory and check if free memory is less than specified threshold.
+	 * @return boolean freeMemoryLessThanThreshold
+	 */
+	private static boolean freeMemoryBelowThreshold() {
+        final long freeMemory = Runtime.getRuntime().freeMemory() / (1024*1024);
+        boolean freeMemoryLessThanThreshold = freeMemory < MEM_THRESHOLD_MB;
+        if (freeMemoryLessThanThreshold) {
+        	Logger.warn("Free Memory less than specified threshold.");
+        }
+		return freeMemoryLessThanThreshold;
 	}
 	
 }
