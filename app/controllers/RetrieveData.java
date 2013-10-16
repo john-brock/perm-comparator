@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.mail.Session;
 
+import org.jaxen.function.FloorFunction;
+
 import controllers.CompareUtils.BaseCompare;
 import models.OAuthSession;
 import models.PermissionSet;
@@ -267,6 +269,8 @@ public class RetrieveData extends Controller {
 		List<JsonObject> results = Lists.newArrayList();
 		List<String> uncachedIds = Lists.newArrayList();
 		
+		Logger.info("[%s] Number of Ids in idList: %d", apiName, idList.size());
+
 		String cacheKeyPrefix = session.getId() + "-setupentity-";
 		// find all cached SEA names and add to results list and determine uncached ids
 		for (String id : idList) {
@@ -285,20 +289,39 @@ public class RetrieveData extends Controller {
 
 		// query to get names for uncached ids
 		if (!uncachedIds.isEmpty()) {
-			String labelQuery = String.format(
-					"SELECT Id, %s FROM %s WHERE Id IN (%s)", isAppType ? "Label"
-							: "Name", apiName, buildIdListString(uncachedIds));
-			
-			JsonArray uncachedResults = RetrieveData.query(labelQuery, retry)
-					.get("records").getAsJsonArray();
-			
-			// for each entity returned, cache result and add to results list
-			for (JsonElement jsonElement : uncachedResults) {
-				JsonObject jsonObj = jsonElement.getAsJsonObject();
-				if (!freeMemoryBelowThreshold()) {
-					Cache.set(cacheKeyPrefix + jsonObj.get("Id").getAsString(), jsonObj.toString(), "3mn");
+			Logger.info("[%s] Number of uncached Ids: %d", apiName, uncachedIds.size());
+
+			// to avoid getting 413 (soql request too large), batch name queries in groups of 250
+			int BATCH_SIZE = 250;
+			int numNamesToRetrieve = uncachedIds.size();
+
+			while(numNamesToRetrieve > 0) {
+				List<String> namesToRetrieve = Lists.newArrayList();
+				if (numNamesToRetrieve < BATCH_SIZE) {
+					namesToRetrieve.addAll(uncachedIds);
+					uncachedIds.clear();
+				} else {
+					// get batch of names to retrieve
+					namesToRetrieve.addAll(uncachedIds.subList(0, BATCH_SIZE));
+					uncachedIds.subList(0, BATCH_SIZE).clear();
+					
 				}
-				results.add(jsonObj);
+				numNamesToRetrieve = uncachedIds.size();
+				String labelQuery = String.format(
+						"SELECT Id, %s FROM %s WHERE Id IN (%s)", isAppType ? "Label"
+								: "Name", apiName, buildIdListString(namesToRetrieve));
+				
+				JsonArray uncachedResults = RetrieveData.query(labelQuery, retry)
+						.get("records").getAsJsonArray();
+				
+				// for each entity returned, cache result and add to results list
+				for (JsonElement jsonElement : uncachedResults) {
+					JsonObject jsonObj = jsonElement.getAsJsonObject();
+					if (!freeMemoryBelowThreshold()) {
+						Cache.set(cacheKeyPrefix + jsonObj.get("Id").getAsString(), jsonObj.toString(), "3mn");
+					}
+					results.add(jsonObj);
+				}
 			}
 		}
 		
