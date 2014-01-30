@@ -59,13 +59,13 @@ Ext.onReady(function() {
             	]
     });
 
-    var userMenuStore = makeStore("Users", menuItemReader, menuItem);
+    userMenuStore = makeStore("Users", menuItemReader, menuItem);
     userMenuStore.load();
 
-    var permsetMenuStore = makeStore("Permsets", permsetItemReader, permsetItem);
+    permsetMenuStore = makeStore("Permsets", permsetItemReader, permsetItem);
     permsetMenuStore.load();
 
-    var profilePermsetMenuStore = makeStore("ProfilePermsets", profileItemReader, profileItem);
+    profilePermsetMenuStore = makeStore("ProfilePermsets", profileItemReader, profileItem);
     profilePermsetMenuStore.load();
     
     var userView = makeMenuView(userMenuStore);
@@ -75,29 +75,75 @@ Ext.onReady(function() {
     var userMenu = Ext.create('Ext.Panel', {
     	title: 'Users',
     	items: userView,
-    	autoScroll: true
+        autoScroll: true
     });
     
     var permsetMenu = Ext.create('Ext.Panel', {
     	title: 'Permission Sets',
     	items: permsetView,
-    	autoScroll: true
+        autoScroll: true
     });
     
     var profileMenu = Ext.create('Ext.Panel', {
     	title: 'Profiles',
     	items: profilePermsetView,
-    	autoScroll: true
+        autoScroll: true
+    });
+    
+    var searchBox = Ext.create('Ext.form.Text', {
+    	id: 'searchBox',
+    	height: '100%',
+    	width: 150,
+    	flex: 1
+    });
+    
+    var searchTip = Ext.create('Ext.tip.ToolTip', {
+        target: searchBox,
+        html: 'Hint: \'search%\' will find all items that start with \'search\'. \'%search\' will find all items that end with \'search\''
+    });
+    
+    var searchButton = Ext.create('Ext.button.Button', {
+   	   text: 'Search',
+  	   width: 75,
+  	   height: '100%',
+  	   handler: search,
+  	   listeners: {
+  		   mouseover: function(){
+  			   searchTip.show();
+  		   },
+  		   mouseout: function(){
+  			   searchTip.hide();
+  		   }
+  	   }
+ 	});
+    
+    var searchPanel = Ext.create('Ext.Panel', {
+    	cls: 'menu',
+        width: 225,
+        height: 60,
+    	title: 'Search',
+    	layout: 'hbox',
+    	items: [searchBox, searchButton]   
     });
     
     var selectionMenu = Ext.create('Ext.Panel', {
     	cls: 'menu-accordion',
-    	region: 'west',
         width: 225,
-        margins: '0 0 5 5',
         layout: 'accordion',
+        flex: 1,
         layoutConfig: {animate: true},
         items: [userMenu, permsetMenu, profileMenu]
+    });
+    
+    var leftPanel = Ext.create('Ext.Panel', {
+    	region: 'west',
+        margins: '0 0 5 5',
+        width: 225,
+    	layout: {
+    		type: 'vbox',
+    		align: 'stretch'
+    	},
+        items: [searchPanel, selectionMenu]
     });
 
     // id fields that are set when item dropped and API call made
@@ -188,7 +234,7 @@ Ext.onReady(function() {
     	storeId: 'userPermStoreId',
     	proxy: {
     		type: 'ajax',
-    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getUserPerms',
+    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/userPerms',
 	        reader: {		
 	    		type: 'json',
 	        	fields : [ {name: 'name', type: 'string'} ]
@@ -225,7 +271,7 @@ Ext.onReady(function() {
     	storeId: 'objectPermStoreId',
     	proxy: {
     		type: 'ajax',
-    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms'
+    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/objectPerms'
     	},
 		fields: [{name: 'success'}, {name: 'text'}, {name: 'children'}, {name: 'leaf'}, {name: 'expanded'}, {name: 'loaded'}],
     	listeners: {
@@ -270,7 +316,7 @@ Ext.onReady(function() {
     	storeId: 'seaPermStoreId',
     	proxy: {
     		type: 'ajax',
-    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getSetupEntityPerms'
+    		url : 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/setupEntityPerms'
     	},
 		fields: [{name: 'success'}, {name: 'text'}, {name: 'children'}, {name: 'leaf'}, {name: 'expanded'}, {name: 'loaded'}],
     	listeners: {
@@ -445,7 +491,7 @@ Ext.onReady(function() {
         layout: 'border',
         items: [
                 header,
-                selectionMenu, 
+                leftPanel, 
                 mainPanel
         ] 
     });
@@ -457,12 +503,17 @@ Ext.onReady(function() {
 // make store used to head menu items (users, permsets, ect.) 
 function makeStore(itemType, menuItemReader, menuItem) {
 	return new Ext.data.Store({
-	    proxy: new Ext.data.HttpProxy({
+	    /*proxy: new Ext.data.HttpProxy({
 	        api: {
-	            read :    itemType+'/get'
+	            read : { url: itemType+'/all' }
 	        },
 	        reader: menuItemReader
-	    }),
+	    }),*/
+    	proxy: {
+    		type: 'ajax',
+    		url : itemType+'/all',
+        	reader: menuItemReader
+    	},
 	    model:  menuItem,
 		autoSave: false
 	});
@@ -687,13 +738,13 @@ function clearAssignmentsFunction() {
     comparePanel = Ext.getCmp('comparePanelId'); // get the actual panel object
     comparePanel.setLoading(true, true);
     
-	userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getUserPerms';
+	userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/userPerms';
 	userPermStoreId.load();
 	
-	objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms';
+	objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/objectPerms';
 	objectPermStoreId.load();
 	
-	seaPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getSetupEntityPerms';
+	seaPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/setupEntityPerms';
 	seaPermStoreId.load();
 }
 
@@ -704,6 +755,19 @@ function clearRowBody(target) {
 	
     Ext.fly(target).removeCls('destination-target-dropped');
     targetEl.update(text);
+}
+
+function search() {
+	var search = encodeURIComponent(Ext.getCmp('searchBox').getValue());
+	//alert('Search ' + Ext.getCmp('searchBox').getValue());
+	userMenuStore.getProxy().url = 'Users/search/' + search;
+	userMenuStore.load();
+	
+	permsetMenuStore.getProxy().url = 'Permsets/search/' + search;
+	permsetMenuStore.load();
+	
+	profilePermsetMenuStore.getProxy().url = 'ProfilePermsets/search/' + search;
+	profilePermsetMenuStore.load();
 }
 
 // -----------------------------------------------------------------------
@@ -837,13 +901,13 @@ function initializeDestinationDropZone(v) {
             comparePanel = Ext.getCmp('comparePanelId'); 	// get the actual panel object
             comparePanel.setLoading(true, true);			// set loading mask while we load data
             
-            userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getUserPerms';
+            userPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/userPerms';
             userPermStoreId.load();
 
-            objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getObjPerms';
+            objectPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/objectPerms';
             objectPermStoreId.load();
             
-            seaPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/getSetupEntityPerms';
+            seaPermStoreId.getProxy().url = 'permsetDiffs/' + id1 + '/' + id2 + '/' + id3 + '/' + id4 + '/setupEntityPerms';
             seaPermStoreId.load();
             
             return true;

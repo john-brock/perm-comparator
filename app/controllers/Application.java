@@ -34,16 +34,17 @@ public class Application extends Controller {
 		}
 	}
 	
-	public static JsonObject getUsers() {
-		return RetrieveData.getItems("User", QUERY_LIMIT, retry);
+	public static JsonObject getUsers(String search) {
+		if (null != search && search.length() > 0) { Logger.info("Search : %s", search); }
+		return RetrieveData.getItems("User", search, QUERY_LIMIT, retry);
 	}
 	
-	public static JsonObject getPermsets() {
-		return RetrieveData.getItems("PermissionSet", QUERY_LIMIT, retry);
+	public static JsonObject getPermsets(String search) {
+		return RetrieveData.getItems("PermissionSet", search, QUERY_LIMIT, retry);
 	}
 
-	public static JsonObject getProfilePermsets() {
-		return RetrieveData.getItems("ProfilePermissionSet", QUERY_LIMIT, retry);
+	public static JsonObject getProfilePermsets(String search) {
+		return RetrieveData.getItems("ProfilePermissionSet", search, QUERY_LIMIT, retry);
 	}
 	
 	// return string that looks like a Json response

@@ -1,5 +1,7 @@
 package controllers;
 
+import java.net.URI;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -54,9 +56,10 @@ public class RetrieveData extends Controller {
 		int res = response.getStatus();
 		if (res == 200) {
 			return response.getJson().getAsJsonObject().getAsJsonObject();
-			
+		} else if (res == 400) {
+			Logger.info("Response: 400 - Malformed query. Query: %s", query);
 		} else if (res == 401) {
-			Logger.info("Response: 400 - Calling refresh for query");
+			Logger.info("Response: 401 - Calling refresh for query");
 			retry = true;
 
 			ForceDotComOAuth2.refreshToken(
@@ -81,8 +84,8 @@ public class RetrieveData extends Controller {
 	 * @param queryLimit - max number of users to retrieve
 	 * @return JsonObject - results
 	 */
-	public static JsonObject getItems(String itemType, int queryLimit, boolean retry) {
-		return  query(generateQuery(itemType, queryLimit), retry);
+	public static JsonObject getItems(String itemType, String search, int queryLimit, boolean retry) {
+		return  query(generateQuery(itemType, search, queryLimit), retry);
 	}
 
 	/**
@@ -90,19 +93,35 @@ public class RetrieveData extends Controller {
 	 * @param itemType - User, PermissionSet, ProfilePermissionSet
 	 * @param itemLimit - number of items to retrieve
 	 */
-	private static String generateQuery(String itemType, int itemLimit) {
+	private static String generateQuery(String itemType, String search, int itemLimit) {
 		StringBuilder queryBuilder = new StringBuilder();
 		queryBuilder.append("SELECT Id, ");
-		
-		if (itemType.equals("User")) 
-			queryBuilder.append("Name FROM User ORDER BY Name ");
-		else if (itemType.equals("PermissionSet")) 
-			queryBuilder.append("Label FROM PermissionSet WHERE IsOwnedByProfile=false ORDER BY Name ");
-		else if (itemType.equals("ProfilePermissionSet")) 
-			queryBuilder.append("Profile.Name FROM PermissionSet WHERE IsOwnedByProfile=true ORDER BY Profile.Name ");
-		
-		queryBuilder.append("ASC NULLS LAST LIMIT ").append(itemLimit);
+		boolean isProfilePermset = itemType.equals("ProfilePermissionSet");
 
+		String displayField = "";
+		if (itemType.equals("User")) {
+			displayField = "Name";
+			queryBuilder.append(displayField).append(" FROM User WHERE IsActive=true ");
+		} else if (itemType.equals("PermissionSet")) {
+			displayField = "Label";
+			queryBuilder.append(displayField).append(" FROM PermissionSet WHERE IsOwnedByProfile=false ");
+		} else if (isProfilePermset) { 
+			displayField = "Profile.Name";
+			queryBuilder.append(displayField).append(" FROM PermissionSet WHERE IsOwnedByProfile=true ");
+		}
+		
+		if (null != search && search.length() > 0) {
+			String safeSearch = search.replace("'", "\\'");
+			if (!safeSearch.startsWith("%") && !safeSearch.endsWith("%")) {
+				// if search string doesn't specify 'starts with' or 'ends with', make generic match string
+				safeSearch = "%" + safeSearch + "%";
+			}
+			queryBuilder.append("AND ").append(displayField).append(" LIKE '").append(safeSearch).append("' ");
+		}
+		queryBuilder.append("ORDER BY ").append(displayField);
+		queryBuilder.append(" ASC NULLS LAST LIMIT ").append(itemLimit);
+
+		Logger.info("QUERY: %s", queryBuilder.toString());
 		return queryBuilder.toString();
 	}
 	
@@ -291,8 +310,8 @@ public class RetrieveData extends Controller {
 		if (!uncachedIds.isEmpty()) {
 			Logger.info("[%s] Number of uncached Ids: %d", apiName, uncachedIds.size());
 
-			// to avoid getting 413 (soql request too large), batch name queries in groups of 250
-			int BATCH_SIZE = 250;
+			// to avoid getting 413 (soql request too large), batch name queries in groups of 200
+			int BATCH_SIZE = 200;
 			int numNamesToRetrieve = uncachedIds.size();
 
 			while(numNamesToRetrieve > 0) {

@@ -3,26 +3,27 @@
 # ~~~~
 
 # Home page
-GET     /                                       	Application.index
-GET     /login										Application.sforceLogin
-GET		/logout										Application.sforceLogout
+GET     /                                       					Application.index
+GET     /login														Application.sforceLogin
+GET		/logout														Application.sforceLogout
 
 # Permission set comparisons
-GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getUserPerms			Application.userPermDiffs
-GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getObjPerms			Application.objectPermDiffs
-GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/getSetupEntityPerms	Application.setupEntityPermDiffs
+GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/userPerms				Application.userPermDiffs
+GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/objectPerms			Application.objectPermDiffs
+GET		/permsetDiffs/{id1}/{id2}/{id3}/{id4}/setupEntityPerms		Application.setupEntityPermDiffs
 
 # Main page functions
-GET 	/{item}/get									Application.get{item}
+GET 	/{item}/all													Application.get{item}
+GET 	/{item}/search/{search}										Application.get{item}
 
 # Ignore favicon requests
-GET 	/favicon.ico 	staticFile:/public/images/favicon.png 
+GET 	/favicon.ico 												staticFile:/public/images/favicon.png 
 
 # Map static resources from the /app/public folder to the /public path
-GET     /public/                                	staticDir:public
-GET     /resources/                                	staticDir:resources
+GET     /public/                                					staticDir:public
+GET     /resources/                                					staticDir:resources
 
-GET		/mu-24d13487-4c2b118c-dc0a575d-280b7ccf.txt		staticFile:/public/mu-24d13487-4c2b118c-dc0a575d-280b7ccf.txt
+GET		/mu-24d13487-4c2b118c-dc0a575d-280b7ccf.txt					staticFile:/public/mu-24d13487-4c2b118c-dc0a575d-280b7ccf.txt
 
 # Catch all
-*       /{controller}/{action}                  	{controller}.{action}
+*       /{controller}/{action}                  					{controller}.{action}
