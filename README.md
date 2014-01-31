@@ -1,10 +1,10 @@
 Perm-Comparator
 ===============
 
-##Compare Salesforce.com users, profiles, and permission sets  
-Goal: help SFDC admins and users determine what permission differences exist between users, profiles, and permission sets
+### Compare Salesforce.com users, profiles, and permission sets  
+Goal: help SFDC admins and users determine what permission differences and similarities exist between users, profiles, and permission sets.
 
-## App is live here: https://perm-comparator.herokuapp.com
+### App is live: https://perm-comparator.herokuapp.com
 1. Login to your Salesforce account using OAuth2
 2. When requested, authorize app to access your SFDC data
 3. Drag a User, Permission Set, or Profile to one of the empty columns
