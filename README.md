@@ -11,6 +11,9 @@ Goal: help SFDC admins and users determine what permission differences exist bet
 4. Repeat for addition users, permission sets, or profiles
 5. Navigate the common, unique, and differing perms in the middle panel
 
+### Video demo
+Dreamforce 2013: http://www.youtube.com/watch?v=iZMH7yqJGo4&feature=youtu.be&t=38m4s
+
 ### Open source
 If you would like to fork or host your own instance of the app, feel free to clone the repo and set up a local server or deploy Heroku.
 
