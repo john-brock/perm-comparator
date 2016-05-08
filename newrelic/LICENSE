@@ -1,11 +1,46 @@
 ----------------------------------------------------------------
 
+This product includes 'ANTLR', which is released under the following license(s):
+    BSD-3 <http://opensource.org/licenses/BSD-3-Clause>
+
+----------------------------------------------------------------
+
 This product includes 'ASM', which is released under the following license(s):
-    ASM <http://asm.ow2.org/license.html>
+    ASM (BSD-3) <http://asm.ow2.org/license.html>
+
+----------------------------------------------------------------
+
+This product includes 'Apache Cassandra', which is released under the following license(s):
+    Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
 
 ----------------------------------------------------------------
 
 This product includes 'Apache Commons CLI', which is released under the following license(s):
+    Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
+----------------------------------------------------------------
+
+This product includes 'Apache Commons Codec', which is released under the following license(s):
+    Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
+----------------------------------------------------------------
+
+This product includes 'Apache Commons Logging', which is released under the following license(s):
+    Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
+----------------------------------------------------------------
+
+This product includes 'GSON', which is released under the following license(s):
+    Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
+----------------------------------------------------------------
+
+This product includes 'Guava', which is released under the following license(s):
+    Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
+----------------------------------------------------------------
+
+This product includes 'HttpClient', which is released under the following license(s):
     Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
 
 ----------------------------------------------------------------
@@ -15,7 +50,12 @@ This product includes 'JSON.simple', which is released under the following licen
 
 ----------------------------------------------------------------
 
-This product includes 'Log4J', which is released under the following license(s):
+This product includes 'Jackson', which is released under the following license(s):
+    Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
+----------------------------------------------------------------
+
+This product includes 'Javassist', which is released under the following license(s):
     Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
 
 ----------------------------------------------------------------
@@ -25,12 +65,22 @@ This product includes 'LogBack', which is released under the following license(s
 
 ----------------------------------------------------------------
 
+This product includes 'Reflections', which is released under the following license(s):
+    Do What The Fuck You Want To Public License (WTFPL) <http://www.wtfpl.net>
+
+----------------------------------------------------------------
+
+This product includes 'SLF4J', which is released under the following license(s):
+    The MIT License (MIT) <http://opensource.org/licenses/MIT>
+
+----------------------------------------------------------------
+
 This product includes 'SnakeYAML', which is released under the following license(s):
     Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
 
 ----------------------------------------------------------------
 
-All other components of this product are: Copyright (c) 2010-2013 New Relic, Inc. All rights reserved.
+All other components of this product are: Copyright (c) 2010-2016 New Relic, Inc. All rights reserved.
 
 Certain inventions disclosed in this file may be claimed within patents owned or patent applications
 filed by New Relic, Inc. or third parties. Subject to the terms of this notice, New Relic grants you

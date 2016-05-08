@@ -1,88 +1,108 @@
 New Relic Java Agent
 --------------------
-New Relic is an application performance monitoring service that lets you see 
-and understand application performance metrics in real time so you can fix problems fast.  The
-Java agent collects system and application metrics by injecting byte-code into a select
-set of methods.  The metrics are reported to the New Relic service once a minute.  The agent also
-reports uncaught exceptions and slow transactions.  
+New Relic is an application performance monitoring (APM) service that lets
+you see and understand application performance metrics in real time so you
+can fix problems fast.  The Java agent collects system and application
+metrics by injecting bytecode into a select set of methods. The metrics are
+reported to the New Relic service once a minute. The agent also reports
+uncaught exceptions and slow transactions.
+
+The Java Agent installs into your app server and monitors the performance
+of your apps.  The agent monitors applications written in Java, Scala, and
+other languages that run on the JVM.  New Relic provides additional detail
+for many common frameworks and libraries. See this page for details:
+
+  http://newrelic.com/java
+
 
 Getting Started
 ---------------
-Two files are required to start the New Relic java agent - newrelic.jar and newrelic.yml.  
-newrelic.jar contains the agent class files, and the newrelic.yml file contains configuration 
-information for the New Relic agent, including your license key, application name,
-ssl settings, etc.
+If you don't already have a New Relic account, sign up for a free account:
 
-You can download both the jar and the tailored yml file by logging into http://rpm.newrelic.com, 
-selecting the "Account" page, and then downloading the files from the right side of the page.
-If you don't already have a New Relic account creating one is easy: http://newrelic.com/signup.
+  https://newrelic.com/signup
 
-The agent requires Java 1.5+.
+When you sign up, you will be provided with a customized zip file that is
+configured with your license key.
+
+Using Java SE 5? You will need a different version of the agent. See below.
+
 
 Installation
 ------------
 Complete installation instructions and troubleshooting tips are available 
-at: http://support.newrelic.com/kb/java/new-relic-for-java
+at:
 
-Configuration options are available at: http://support.newrelic.com/kb/java/java-agent-configuration
+  https://newrelic.com/docs/java/new-relic-for-java
 
-The NewRelic Java agent bootstraps using the -javaagent command line option. 
+For most users, the following self-installer instructions apply:
 
-Create a directory in your application server home directory named newrelic and copy the 
-newrelic.jar and newrelic.yml files into it. 
+  https://newrelic.com/docs/java/java-agent-self-installer
 
-On server startup the agent will search for the newrelic.yml file in the directory containing 
-the newrelic.jar file.  The agent log will be written relative to the newrelic.jar file in 
-a directory named 'logs'.
+Configuration options are available at:
+
+  https://newrelic.com/docs/java/java-agent-configuration
+
+
+Using New Relic
+---------------
+Once you have installed the agent and restarted your app server, you can
+login to New Relic at
+
+  https://rpm.newrelic.com
+
+and see your application's performance information. It takes about two
+minutes for the application data to show up. By default, your data will
+appear under an application named "My Application". You can change this by
+updating the app_name setting in newrelic.yml (see below).
+
+
+Agent Files
+-----------
+Typically, you will unzip the newrelic files in your app server root. The
+layout is:
 
   newrelic/
     newrelic.jar
+    newrelic-api.jar
     newrelic.yml
     logs/
       ...
 
+The installation process adds a JVM argument
+  -javaagent:newrelic/newrelic.jar
+to your app server startup script.
 
-Tomcat
-------
-The Tomcat startup script (catalina.sh) can be configured to use the New Relic agent using the JAVA_OPTS environment variable:
+The newrelic.yml file provides configuration options. Most of the options
+take effect on restart of the app server. NOTE: yml requires exact
+whitespace indentation! If the indentation is incorrect, the option may be
+ignored.
 
-export JAVA_OPTS="$JAVA_OPTS -javaagent:/full/path/to/newrelic.jar"
+The logs directory contains important diagnostic information about the
+agent. In particular, view newrelic/logs/newrelic_agent.log if you are
+troubleshooting.
 
-Jetty
------
-The Jetty startup script (jetty.sh) can be configured using the JAVA_OPTIONS environment variable:
-
-export JAVA_OPTIONS="${JAVA_OPTIONS} -javaagent:/full/path/to/newrelic.jar"
-
-JBoss
------
-Add this line to the bottom of bin/run.conf:
-
-JAVA_OPTS="$JAVA_OPTS -javaagent:/full/path/to/newrelic.jar"
-
-Other Application Servers
--------------------------
-The New Relic Java agent has been tested on Tomcat, Jetty and JBoss, but it should work on any application server.
+If you use the New Relic API in your code, you will need to include the
+newrelic-api.jar file at compile time and add it as a dependency to your
+app. Make sure that you use the same version for your API and newrelic.jar.
+New Relic publishes to the Maven Central Repository, so you can add a
+dependency to newrelic-api in your favorite build tool.
 
 
+Note to Java SE 5 Users
+-----------------------
+This version of the agent works with Java SE 6, 7 and 8. At signup or in your
+Account Settings page, you have the option to download a version of the
+agent that works with Java SE 5.
 
-That's all you need to do.  Start your application server with the -javaagent parameters and log in to New Relic
-to see your app's performance information.  It takes about 2 minutes for the application data to show up
-in New Relic (http://rpm.newrelic.com).  By default, your data will appear under an application named 
-"My Application". You can change this by updating the app_name setting in newrelic.yml.
 
 Support
 -------
-Email support@newrelic.com, or visit our support site at http://support.newrelic.com.
+Email <support@newrelic.com>, or visit our support site at
+
+  https://support.newrelic.com
+
 
 Licenses
 --------
-The New Relic Java agent uses code from the following open source projects under the following licenses:
-    ASM                   http://asm.ow2.org/                              http://asm.ow2.org/license.html
-    Apache Commons CLI    http://commons.apache.org/cli/                   http://www.apache.org/licenses/LICENSE-2.0
-    JSON.simple           http://code.google.com/p/json-simple/            http://www.apache.org/licenses/LICENSE-2.0
-    SnakeYAML             http://code.google.com/p/snakeyaml/              http://www.apache.org/licenses/LICENSE-2.0
-    Log4J                 http://logging.apache.org/log4j/1.2/             http://www.apache.org/licenses/LICENSE-2.0
-    LogBack               http://logback.qos.ch/                           http://www.eclipse.org/legal/epl-v10.html
-
-The remainder of the code is under the New Relic Agent License contained in the LICENSE file.
+See the LICENSE file for New Relic's license terms and the list of
+third-party components that are included in the agent.
