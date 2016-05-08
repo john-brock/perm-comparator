@@ -17,8 +17,8 @@ Dreamforce 2013: http://www.youtube.com/watch?v=iZMH7yqJGo4&feature=youtu.be&t=3
 ### Open source
 If you would like to fork or host your own instance of the app, feel free to clone the repo and set up a local server or deploy Heroku.
 
-### Local Installation
-To install and run on a local server, please see the instructions here:
+### Local install
+To install and run on a local server, please see the instructions here:<br/>
 https://github.com/john-brock/perm-comparator/blob/master/LocalInstallInstructions.md
 
 ### Questions
