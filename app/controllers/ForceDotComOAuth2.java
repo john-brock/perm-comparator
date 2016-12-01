@@ -35,7 +35,6 @@ public class ForceDotComOAuth2 extends Controller {
 	private static final String REVOKE_URL_sBox = "https://test.salesforce.com/services/oauth2/revoke";
 	
 	private static final String ACCESS_TOKEN = "access_token";
-	private static final String REFRESH_TOKEN = "refresh_token";
 	private static final String ID_ATTR = "id";
 	private static final String INSTANCE_URL = "instance_url";
 	private static final String SIGNATURE = "signature";
@@ -181,11 +180,10 @@ public class ForceDotComOAuth2 extends Controller {
 
 			// ensure all expected elements are present in response object
 			if (attributesPresent(r, Lists.newArrayList(ACCESS_TOKEN,
-					REFRESH_TOKEN, ID_ATTR, INSTANCE_URL, SIGNATURE))) {
+					ID_ATTR, INSTANCE_URL, SIGNATURE))) {
 				
 				OAuthSession s = new OAuthSession();
 				s.access_token = r.getAsJsonPrimitive(ACCESS_TOKEN).getAsString();
-				s.refresh_token = r.getAsJsonPrimitive(REFRESH_TOKEN).getAsString();
 				s.idURL = r.getAsJsonPrimitive(ID_ATTR).getAsString();
 				s.instance_url = r.getAsJsonPrimitive(INSTANCE_URL).getAsString();
 				s.signature = r.getAsJsonPrimitive(SIGNATURE).getAsString();
@@ -227,41 +225,6 @@ public class ForceDotComOAuth2 extends Controller {
 			if (object.getAsJsonPrimitive(attribute) == null) { return false; }
 		}
 		return true;	// all attributes found
-	}
-	
-	public static boolean refreshToken(String tokenURL, String clientId,
-			String sec) {
-		if (!isLoggedIn())
-			return false;
-
-		OAuthSession currentSession = getOAuthSession();
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("grant_type", "refresh_token");
-		params.put("refresh_token", currentSession.refresh_token);
-		params.put("client_id", clientId);
-		params.put("client_secret", sec);
-		HttpResponse response = WS.url(tokenURL).params(params).post();
-		JsonObject r = response.getJson().getAsJsonObject();
-
-		// ensure all expected elements are present in response object
-		if (attributesPresent(r, Lists.newArrayList(ACCESS_TOKEN,
-				ID_ATTR, INSTANCE_URL, SIGNATURE))) {
-
-			currentSession.access_token = r.getAsJsonPrimitive(ACCESS_TOKEN).getAsString();
-			currentSession.idURL = r.getAsJsonPrimitive(ID_ATTR).getAsString();
-			currentSession.instance_url = r.getAsJsonPrimitive(INSTANCE_URL).getAsString();
-			currentSession.signature = r.getAsJsonPrimitive(SIGNATURE).getAsString();
-
-			String id = currentSession.idURL.substring(currentSession.idURL
-					.lastIndexOf('/') + 1);
-			currentSession.uid = id;
-
-			Cache.set(session.getId() + "-oauth", currentSession);
-			if (isPersistentSession()) {
-				currentSession.merge();
-			}
-		}
-		return true;
 	}
 
 	public static interface OAuthListner extends Serializable {

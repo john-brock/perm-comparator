@@ -12,7 +12,7 @@ Note: these instructions are for a Mac and commands to be run in terminal are 
 2. Check version of Play! that is installed — Play! is a java framework, read more here: [http://www.playframework.com/documentation/1.3.4/home](http://www.playframework.com/documentation/1.2.6/home) 
     1. command: which play
     2. If Play! isn't installed, download Play 1.3.4 jar.
-        1. [http://downloads.typesafe.com/play/1.3.4/play-1.3.4.zip](http://downloads.typesafe.com/play/1.2.6/play-1.2.6.zip)
+        1. [http://downloads.typesafe.com/play/1.3.4/play-1.3.4.zip](http://downloads.typesafe.com/play/1.3.4/play-1.3.4.zip)
         2. extract to folder of your choice
         3. create an alias for Play! in /usr/local/bin
             1. command: ln -s /Users/jbrock/Downloads/play-1.3.4/play /usr/local/bin

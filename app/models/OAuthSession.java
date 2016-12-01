@@ -28,7 +28,6 @@ public class OAuthSession extends Model {
 	public String access_token;
 
 	@Column(length = 300)
-	public String refresh_token;
 	public String instance_url;
 	public String signature;
 
@@ -39,7 +38,6 @@ public class OAuthSession extends Model {
 		OAuthSession sess = find("uid", uid).first();
 		if (sess != null) {
 			sess.access_token = Crypto.decryptAES(sess.access_token);
-			sess.refresh_token = Crypto.decryptAES(sess.refresh_token);
 		}
 		return sess;
 	}
@@ -47,28 +45,22 @@ public class OAuthSession extends Model {
 	@Override
 	public <T extends JPABase> T save() {
 		String before_encrypt_at = access_token;
-		String before_encrypt_rt = refresh_token;
 
 		access_token = Crypto.encryptAES(access_token);
-		refresh_token = Crypto.encryptAES(refresh_token);
 
 		T ret = super.save();
 		access_token = before_encrypt_at;
-		refresh_token = before_encrypt_rt;
 		return ret;
 	}
 
 	@Override
 	public <T extends JPABase> T merge() {
 		String before_encrypt_at = access_token;
-		String before_encrypt_rt = refresh_token;
 
 		access_token = Crypto.encryptAES(access_token);
-		refresh_token = Crypto.encryptAES(refresh_token);
 
 		T ret = super.merge();
 		access_token = before_encrypt_at;
-		refresh_token = before_encrypt_rt;
 		return ret;
 	}
 }

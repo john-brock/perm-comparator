@@ -59,16 +59,7 @@ public class RetrieveData extends Controller {
 		} else if (res == 400) {
 			Logger.info("Response: 400 - Malformed query. Query: %s", query);
 		} else if (res == 401) {
-			Logger.info("Response: 401 - Calling refresh for query");
-			retry = true;
-
-			ForceDotComOAuth2.refreshToken(
-					"https://login.salesforce.com/services/oauth2/token",
-					System.getenv("clientKey"), System.getenv("clientSecret"));
-
-			Logger.info("Refresh complete for query");
-			query(query, retry);
-			
+			Logger.error("Response: 401 - Session has expired");
 		} else if (res == 500) {
 			Logger.error("Response 500: Invalid query resulted in response code 500. Query was: %s", query);
 		} else {
@@ -158,16 +149,7 @@ public class RetrieveData extends Controller {
 				return jsonResult.getAsJsonObject();
 				
 			} else if (res == 401) {
-				Logger.info("Response: 400 - calling refresh in getUserPerms");
-				retry = true;
-	
-				ForceDotComOAuth2.refreshToken(
-						"https://login.salesforce.com/services/oauth2/token",
-						System.getenv("clientKey"), System.getenv("clientSecret"));
-	
-				Logger.info("Refresh done for getUserPerms");
-				getUserPerms(retry);
-				
+				Logger.error("Response: 401 - Session timed out before calling refresh in getUserPerms");
 			} else {
 				Logger.error("Error occured attempting to retrieve user perms. Response code: %s", res);
 			}
