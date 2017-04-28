@@ -23,6 +23,39 @@ public class Application extends Controller {
 	private static boolean retry = false;
 	private static final String sandboxParam = "sandboxLogin";
 
+    /** Called before every request to ensure that HTTPS is used. */
+	/** redirect code credit: http://stackoverflow.com/questions/7415030/enforce-https-routing-for-login-with-play-framework **/
+    @Before
+    public static void redirectToHttps() {
+        //if it's not secure, but Heroku has already done the SSL processing then it might actually be secure after all
+        if (!request.secure && request.headers.get("x-forwarded-proto") != null) {
+            request.secure = request.headers.get("x-forwarded-proto").values.contains("https");
+        }
+
+        //redirect if it's not secure
+        if (!request.secure) {
+            String url = redirectHostHttps() + request.url;
+            System.out.println("Redirecting to secure: " + url);
+            redirect(url);
+        }
+    }
+
+    /** Renames the host to be https://, handles both Heroku and local testing. */
+    @Util
+    public static String redirectHostHttps() {
+        if (Play.id.equals("dev")) {
+            String[] pieces = request.host.split(":");
+            String httpsPort = (String) Play.configuration.get("https.port");
+            return "https://" + pieces[0] + ":" + httpsPort; 
+        } else {
+            if (request.host.endsWith("domain.com")) {
+                return "https://secure.domain.com";
+            } else {
+                return "https://" + request.host;
+            }
+        }
+    }  
+	
 	// main function to render login or main page
 	public static void index() {
 		if ((OAuthSession) Cache.get(session.getId() + "-oauth") != null) {
