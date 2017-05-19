@@ -595,7 +595,7 @@ function makeMenuView(itemStore) {
 		cls: 'item-view',
 		tpl: '<tpl for=".">' +
             	'<div class="item-source"><table><tbody>' +
-                	'<tr><td class="item-label">Name</td><td class="item-name">{Name}</td></tr>' +
+                	'<tr><td class="item-label">Name</td><td class="item-name">{Name:htmlEncode}</td></tr>' +
                 	/*'<tr><td class="item-label">Id</td><td class="item-name">{Id}</td></tr>' +*/
                 '</tbody></table></div>' +
             '</tpl>',
