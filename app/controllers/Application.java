@@ -1,17 +1,18 @@
 package controllers;
 
-import play.*;
-import play.mvc.*;
-import play.libs.*;
-import play.libs.WS.*;
-import play.cache.*;
+import java.util.Map;
+
+import models.OAuthSession;
+import play.Logger;
+import play.Play;
 import play.cache.Cache;
+import play.mvc.Before;
+import play.mvc.Controller;
+import play.mvc.Util;
 
-import java.util.*;
-
-import models.*;
-
-import com.google.gson.*;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import controllers.CompareUtils.CompareObjectPerms;
 import controllers.CompareUtils.CompareSetupEntityPerms;
@@ -22,6 +23,11 @@ public class Application extends Controller {
 	private static int QUERY_LIMIT = 500;
 	private static boolean retry = false;
 	private static final String sandboxParam = "sandboxLogin";
+
+	private static final Map<String, Boolean> CONFIG_MAP = ImmutableMap.of(
+		"shouldShowId", Boolean.valueOf(System.getenv("shouldShowId"))
+	);
+	private static final JsonObject CONFIG_JSON = buildConfig(CONFIG_MAP);
 
     /** Called before every request to ensure that HTTPS is used. */
 	/** redirect code credit: http://stackoverflow.com/questions/7415030/enforce-https-routing-for-login-with-play-framework **/
@@ -65,6 +71,10 @@ public class Application extends Controller {
 			Logger.info("No OAuth session in cache - rendering login.html");
 			render("Application/login.html");
 		}
+	}
+	
+	public static JsonObject getConfigs() {
+		return CONFIG_JSON;
 	}
 	
 	public static JsonObject getUsers(String search) {
@@ -171,4 +181,20 @@ public class Application extends Controller {
 			render("Application/logout.html", instanceURL, redirect);
 		}
 	}
+
+	private static JsonObject buildConfig(final Map<String, Boolean> configMap) {
+		final JsonArray configs = new JsonArray();
+		for (String key : CONFIG_MAP.keySet()) {
+			final JsonObject shouldShowId = new JsonObject();
+			shouldShowId.addProperty("key", key);
+			shouldShowId.addProperty("value", CONFIG_MAP.get(key));
+			configs.add(shouldShowId);
+		}
+		
+		final JsonObject toReturn = new JsonObject();
+		toReturn.addProperty("done", true);
+		toReturn.addProperty("totalSize", configs.size());
+		toReturn.add("configs", configs);
+		return toReturn;
+	}	
 }

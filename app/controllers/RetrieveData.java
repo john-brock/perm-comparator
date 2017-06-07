@@ -1,19 +1,14 @@
 package controllers;
 
-import java.net.URI;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.mail.Session;
-
-import org.jaxen.function.FloorFunction;
-
-import controllers.CompareUtils.BaseCompare;
 import models.OAuthSession;
-import models.PermissionSet;
+
+import org.apache.commons.lang.StringEscapeUtils;
+
 import play.Logger;
 import play.cache.Cache;
 import play.libs.WS;
@@ -22,12 +17,12 @@ import play.libs.WS.WSRequest;
 import play.mvc.Controller;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import controllers.CompareUtils.BaseCompare;
 
 /*
  * Reference: Play-ing in Java - By SANDEEP BHANOT
@@ -76,7 +71,29 @@ public class RetrieveData extends Controller {
 	 * @return JsonObject - results
 	 */
 	public static JsonObject getItems(String itemType, String search, int queryLimit, boolean retry) {
-		return  query(generateQuery(itemType, search, queryLimit), retry);
+		final JsonObject items = query(generateQuery(itemType, search, queryLimit), retry);
+		items.getAsJsonArray("records").forEach(item -> {
+			// Need to escape all names to ensure there are no XSS issues
+			final JsonObject itemJson = item.getAsJsonObject();
+			switch(itemType) {
+				case "PermissionSet":
+					itemJson.addProperty("Label", 
+						StringEscapeUtils.escapeHtml(itemJson.get("Label").getAsString())
+					);
+					break;
+				case "ProfilePermissionSet":
+					itemJson.getAsJsonObject("Profile").addProperty("Name", 
+						StringEscapeUtils.escapeHtml(itemJson.getAsJsonObject("Profile").get("Name").getAsString())
+					);
+					break;
+				default:
+					// default case - only used for User
+					itemJson.addProperty("Name", 
+						StringEscapeUtils.escapeHtml(itemJson.get("Name").getAsString())
+					);
+			};
+		});
+		return items;
 	}
 
 	/**

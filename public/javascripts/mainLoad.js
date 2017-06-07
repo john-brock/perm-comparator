@@ -1,7 +1,35 @@
 Ext.require(['*']);
 
 Ext.onReady(function() {
+
+	// Configs for application behavior
+	var configReader = new Ext.data.JsonReader({
+		totalProperty: 'totalSize',
+		successProperty: 'done',
+		root: 'configs',
+		fields : [
+			{name: 'key', type: 'string'},
+			{name: 'value', type: 'boolean'}
+		]
+	});
 	
+    Ext.define('config', {
+        extend: 'Ext.data.Model',
+        fields: [
+                 {name: 'key'},
+                 {name: 'value'}
+            	]
+    });
+    
+    configStore = makeStore("Configs", configReader, config);
+    configStore.load({
+    	callback: function() {
+    		buildMainPage(this);
+    	}
+    });
+});
+
+function buildMainPage(configs) {
 	// Users, Permission Sets - reader for menu items
 	var menuItemReader = new Ext.data.JsonReader({
 		totalProperty: 'totalSize',
@@ -58,7 +86,7 @@ Ext.onReady(function() {
                  {name: 'Id'}
             	]
     });
-
+    
     userMenuStore = makeStore("Users", menuItemReader, menuItem);
     userMenuStore.load();
 
@@ -495,8 +523,7 @@ Ext.onReady(function() {
                 mainPanel
         ] 
     });
-});
-
+}
 
 // ** Utility functions **
 //
@@ -586,17 +613,27 @@ function makeTreeView(permStore) {
     });
 }
 
+function getConfigValueOrDefault(key, defaultValue) {
+	var config = configStore.findRecord('key', key);
+	if (null != config) {
+		return config.get('value');
+	}
+	return defaultValue;
+}
+
 // view used for displaying Name and Id for Users, Permsets, and Profiles in left-hand Menu
 // - makes the items dragable with initializeDragZone call
 // EXTJS4 Drag Drop example was VERY helpful
 // -- http://dev.sencha.com/deploy/ext-4.0.0/examples/dd/dragdropzones.html
 function makeMenuView(itemStore) {
+	var shouldShowId = getConfigValueOrDefault('shouldShowId', false);
+	var idStringIfApplicable = shouldShowId ? '<tr><td class="item-label">Id</td><td class="item-name">{Id}</td></tr>' : '';
 	return Ext.create('Ext.view.View', {
 		cls: 'item-view',
 		tpl: '<tpl for=".">' +
             	'<div class="item-source"><table><tbody>' +
-                	'<tr><td class="item-label">Name</td><td class="item-name">{Name:htmlEncode}</td></tr>' +
-                	/*'<tr><td class="item-label">Id</td><td class="item-name">{Id}</td></tr>' +*/
+                	'<tr><td class="item-label">Name</td><td class="item-name">{Name}</td></tr>' +
+                	idStringIfApplicable +
                 '</tbody></table></div>' +
             '</tpl>',
          itemSelector: 'div.item-source',
